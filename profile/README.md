@@ -1,5 +1,9 @@
 # BlueLua
 
+<p align="center">
+  <img src="/assets/bluelua-banner.svg" alt="BlueLua banner" width="100%">
+</p>
+
 BlueLua is building a Lua ecosystem: small, practical projects that work well
 together and make Lua more useful for everyday development, scripting, testing,
 and Linux tooling.
