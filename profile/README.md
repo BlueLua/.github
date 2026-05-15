@@ -23,7 +23,7 @@ Our current direction includes:
 
 Some of the public projects include:
 
-- [`seeds`](https://github.com/luamod/mods/tree/dev) - focused Lua modules.
+- [`mods`](https://github.com/luamod/mods/) - focused Lua modules.
 - [`tty`](https://github.com/BlueLua/tty) - small cross-platform Lua bindings
   for terminal inspection.
 - [`timeutil`](https://github.com/BlueLua/timeutil) - a C-backed Lua module for
