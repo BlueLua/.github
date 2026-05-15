@@ -1,0 +1,31 @@
+name: Release Please
+
+on:
+  workflow_call:
+    inputs:
+      manifest-file:
+        required: false
+        type: string
+        default: .github/.release-please-manifest.json
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout shared Release Please config
+        uses: actions/checkout@v4
+        with:
+          repository: BlueLua/.github
+          ref: main
+          path: shared-config
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: shared-config/.github/release-please-config.json
+          manifest-file: ${{ inputs.manifest-file }}
