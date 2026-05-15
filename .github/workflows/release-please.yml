@@ -3,6 +3,10 @@ name: Release Please
 on:
   workflow_call:
     inputs:
+      config-file:
+        required: false
+        type: string
+        default: .github/release-please-config.json        
       manifest-file:
         required: false
         type: string
@@ -19,5 +23,5 @@ jobs:
       - uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: simple
+          config-file: ${{ inputs.config-file }}
           manifest-file: ${{ inputs.manifest-file }}
