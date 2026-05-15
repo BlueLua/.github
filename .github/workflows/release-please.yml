@@ -20,5 +20,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: simple
-          initial-version: 0.1.0
           manifest-file: ${{ inputs.manifest-file }}
