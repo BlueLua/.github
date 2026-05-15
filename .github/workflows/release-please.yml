@@ -16,16 +16,9 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout shared Release Please config
-        uses: actions/checkout@v6
-        with:
-          repository: BlueLua/.github
-          ref: main
-          path: shared-config
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: shared-config/.github/release-please-config.json
+          release-type: simple
+          initial-version: 0.1.0
           manifest-file: ${{ inputs.manifest-file }}
