@@ -1,5 +1,3 @@
-# BlueLua
-
 <img src="https://raw.githubusercontent.com/BlueLua/.github/main/assets/bluelua-banner.svg" alt="BlueLua banner" width="100%">
 
 BlueLua is building a Lua ecosystem: small, practical projects that work well
