@@ -6,38 +6,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a bug. Please provide as much detail as possible.
+        Thanks for reporting a bug!
   - type: textarea
     id: summary
     attributes:
       label: Summary
       description: What is the bug?
       placeholder: Clear and concise description of the problem.
-    validations:
-      required: true
-  - type: textarea
-    id: steps
-    attributes:
-      label: Steps to Reproduce
-      description: How can we reproduce the issue?
-      placeholder: |
-        1. ...
-        2. ...
-        3. ...
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Behavior
-      description: What did you expect to happen?
-    validations:
-      required: true
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual Behavior
-      description: What actually happened?
     validations:
       required: true
   - type: dropdown
@@ -55,6 +30,45 @@ body:
         - LuaJIT
     validations:
       required: false
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Which operating system are you using?
+      default: 1
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: A clear description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: A clear description of what actually happened.
+    validations:
+      required: true
   - type: textarea
     id: logs
     attributes:
