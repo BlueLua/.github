@@ -101,8 +101,8 @@ Run lint checks before opening a PR:
   repository.
 - For website updates, guides, or layout improvements, please open pull requests
   there.
-- For inline API documentation changes, update the source annotations directly
-  in the code or type definitions of the corresponding repository.
+- For inline API documentation changes, update the annotations under the
+  `types/` of the corresponding repository.
 
 ## Styleguides
 
