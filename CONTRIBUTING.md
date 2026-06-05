@@ -21,34 +21,31 @@ tests, and code improvements. 🎉
 Before asking a question:
 
 - Read the repository's documentation.
-- Check existing [issues](../../../issues).
-- Check [discussions](../../../discussions).
+- Check existing [issues].
+- Check [discussions].
 - Search the internet for existing answers.
 
-If you still need help, use
-[GitHub Discussions](../../../discussions/new?category=q-a) or open a new
-[question issue](../../../issues/new?template=question.yml) with your relevant
-context.
+If you still need help, use [GitHub Discussions] or open a new [question issue]
+with your relevant context.
 
 ### I Want To Contribute
 
 Contributions of all sizes are welcome. Keep changes focused and small. By
 contributing, you agree your contributions are provided under this repository's
-[LICENSE](LICENSE).
+[LICENSE].
 
 Before opening a PR:
 
-- For larger changes, start with an [issue](../../../issues) or
-  [discussion](../../../discussions) first.
+- For larger changes, start with an [issue][issues] or [discussion][discussions]
+  first.
 - Prefer one clear purpose per PR.
-- Include related [`tests/`](tests/) updates when behavior changes.
+- Include related [`tests/`][tests] updates when behavior changes.
 
 ### Reporting Bugs
 
 Before submitting a bug report, read the repository's documentation, check
-[discussions](../../../discussions) and existing [issues](../../../issues), and
-search the internet for similar reports or fixes to avoid duplicates and
-continue existing threads.
+[discussions] and existing [issues], and search the internet for similar reports
+or fixes to avoid duplicates and continue existing threads.
 
 When reporting a bug, include:
 
@@ -59,9 +56,8 @@ When reporting a bug, include:
 
 ### Suggesting Enhancements
 
-For enhancements, read the repository's documentation, check
-[discussions](../../../discussions) and existing [issues](../../../issues) to
-avoid duplicate requests, then open an issue and include:
+For enhancements, read the repository's documentation, check [discussions] and
+existing [issues] to avoid duplicate requests, then open an issue and include:
 
 - The problem you want to solve.
 - The proposed behavior.
@@ -72,7 +68,7 @@ avoid duplicate requests, then open an issue and include:
 
 #### Testing
 
-Tests live in [`tests/`](tests/). Add or update specs there when behavior
+Tests live in [`tests/`][tests]. Add or update specs there when behavior
 changes.
 
 Run tests with [Busted]:
@@ -140,10 +136,16 @@ Run formatters before opening a PR:
 
 This project follows [Conventional Commits] 1.0.0.
 
+[bluelua.github.io]: https://github.com/BlueLua/bluelua.github.io
 [Busted]: https://github.com/lunarmodules/busted
+[Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
+[discussions]: /discussions
+[GitHub Discussions]: /discussions/new?category=q-a
+[issues]: /issues
+[LICENSE]: /LICENSE
 [LuaCheck]: https://github.com/mpeterv/luacheck
 [markdownlint-cli2]: https://github.com/DavidAnson/markdownlint-cli2
 [Prettier]: https://prettier.io/
+[question issue]: /issues/new?template=question.yml
 [StyLua]: https://github.com/JohnnyMorganz/StyLua
-[bluelua.github.io]: https://github.com/BlueLua/bluelua.github.io
-[Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
+[tests]: /tests/
