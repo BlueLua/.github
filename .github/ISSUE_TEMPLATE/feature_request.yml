@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the suggestion! Please include context and examples if possible.
+        Thanks for the suggestion!
   - type: textarea
     id: problem
     attributes:
@@ -20,6 +20,7 @@ body:
     attributes:
       label: Proposed Solution
       description: What do you want to see added or changed?
+      placeholder: A clear and concise description of what you want to happen.
     validations:
       required: true
   - type: textarea
@@ -27,6 +28,7 @@ body:
     attributes:
       label: Alternatives Considered
       description: Any alternative approaches?
+      placeholder: A clear and concise description of any alternative solutions or features you've considered.
     validations:
       required: false
   - type: textarea
@@ -34,5 +36,6 @@ body:
     attributes:
       label: Additional Context
       description: Links, examples, or references.
+      placeholder: Add any other context, screenshots, or examples here.
     validations:
       required: false
