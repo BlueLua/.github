@@ -83,16 +83,16 @@ busted tests/<name>.test.lua
 
 Run lint checks before opening a PR:
 
-- **Lua** ([LuaCheck]):
+- **Linter** ([LuaCheck]):
 
   ```sh
   luacheck .
   ```
 
-- **Markdown** ([markdownlint-cli2]):
+- **Formatter** ([StyLua]):
 
   ```sh
-  markdownlint-cli2 "*.md"
+  stylua . --check
   ```
 
 ## Improving The Documentation
@@ -116,4 +116,4 @@ This project follows [Conventional Commits] 1.0.0.
 [documentation]: https://bluelua.github.io
 [LICENSE]: LICENSE
 [LuaCheck]: https://github.com/mpeterv/luacheck
-[markdownlint-cli2]: https://github.com/DavidAnson/markdownlint-cli2
+[StyLua]: https://github.com/JohnnyMorganz/StyLua
