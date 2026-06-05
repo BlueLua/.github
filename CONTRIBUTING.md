@@ -30,9 +30,8 @@ context.
 
 ### I Want To Contribute
 
-Contributions of all sizes are welcome. Keep changes focused and small. By
-contributing, you agree your contributions are provided under this repository's
-LICENSE.
+Contributions of all sizes are welcome. Keep changes focused and small. All
+contributions are licensed under the [LICENSE].
 
 Before opening a PR:
 
@@ -114,5 +113,6 @@ This project follows [Conventional Commits] 1.0.0.
 [Busted]: https://github.com/lunarmodules/busted
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
 [documentation]: https://bluelua.github.io
+[LICENSE]: LICENSE
 [LuaCheck]: https://github.com/mpeterv/luacheck
 [markdownlint-cli2]: https://github.com/DavidAnson/markdownlint-cli2
