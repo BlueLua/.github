@@ -66,7 +66,8 @@ existing issues to avoid duplicate requests, then open an issue and include:
 
 #### Testing
 
-Tests live in `tests/`. Add or update specs there when behavior changes.
+Tests live in `tests/` (named `<name>.test.lua`). Add or update tests there when
+behavior changes.
 
 Run tests with [Busted]:
 
@@ -74,8 +75,8 @@ Run tests with [Busted]:
 # All tests
 busted
 
-# One spec file while iterating
-busted tests/<module>_spec.lua
+# A specific test file
+busted tests/<name>.test.lua
 ```
 
 #### Linting
