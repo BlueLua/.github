@@ -20,32 +20,31 @@ tests, and code improvements. 🎉
 
 Before asking a question:
 
-- Read the repository's documentation.
-- Check existing [issues].
-- Check [discussions].
+- Read the official [documentation].
+- Check existing issues.
+- Check discussions.
 - Search the internet for existing answers.
 
-If you still need help, use [GitHub Discussions] or open a new [question issue]
-with your relevant context.
+If you still need help, open a discussion or a question issue with your relevant
+context.
 
 ### I Want To Contribute
 
 Contributions of all sizes are welcome. Keep changes focused and small. By
 contributing, you agree your contributions are provided under this repository's
-[LICENSE].
+LICENSE.
 
 Before opening a PR:
 
-- For larger changes, start with an [issue][issues] or [discussion][discussions]
-  first.
+- For larger changes, start with an issue or discussion first.
 - Prefer one clear purpose per PR.
-- Include related [`tests/`][tests] updates when behavior changes.
+- Include related `tests/` updates when behavior changes.
 
 ### Reporting Bugs
 
-Before submitting a bug report, read the repository's documentation, check
-[discussions] and existing [issues], and search the internet for similar reports
-or fixes to avoid duplicates and continue existing threads.
+Before submitting a bug report, read the official [documentation], check
+discussions and existing issues, and search the internet for similar reports or
+fixes to avoid duplicates and continue existing threads.
 
 When reporting a bug, include:
 
@@ -56,8 +55,8 @@ When reporting a bug, include:
 
 ### Suggesting Enhancements
 
-For enhancements, read the repository's documentation, check [discussions] and
-existing [issues] to avoid duplicate requests, then open an issue and include:
+For enhancements, read the official [documentation], check discussions and
+existing issues to avoid duplicate requests, then open an issue and include:
 
 - The problem you want to solve.
 - The proposed behavior.
@@ -68,8 +67,7 @@ existing [issues] to avoid duplicate requests, then open an issue and include:
 
 #### Testing
 
-Tests live in [`tests/`][tests]. Add or update specs there when behavior
-changes.
+Tests live in `tests/`. Add or update specs there when behavior changes.
 
 Run tests with [Busted]:
 
@@ -85,40 +83,16 @@ busted tests/<module>_spec.lua
 
 Run lint checks before opening a PR:
 
-- Run Lua lint with [LuaCheck]:
+- **Lua** ([LuaCheck]):
 
   ```sh
   luacheck .
   ```
 
-- Run Markdown lint with [markdownlint-cli2]:
+- **Markdown** ([markdownlint-cli2]):
 
   ```sh
-  # If markdownlint-cli2 is installed globally
-  markdownlint-cli2 '*.md'
-
-  # If you want to run it through npx
-  npx --yes markdownlint-cli2 '*.md'
-  ```
-
-#### Formatting
-
-Run formatters before opening a PR:
-
-- Format `.md`, `.json`, `.yml`, `.ts`, and `.mts` files with [Prettier]:
-
-  ```sh
-  # If Prettier is installed globally
-  prettier --write .
-
-  # If you want to run it through npx
-  npx --yes prettier --write .
-  ```
-
-- Format `.lua` files with [StyLua]:
-
-  ```sh
-  stylua .
+  markdownlint-cli2 "*.md"
   ```
 
 ## Improving The Documentation
@@ -139,13 +113,6 @@ This project follows [Conventional Commits] 1.0.0.
 [bluelua.github.io]: https://github.com/BlueLua/bluelua.github.io
 [Busted]: https://github.com/lunarmodules/busted
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
-[discussions]: /discussions
-[GitHub Discussions]: /discussions/new?category=q-a
-[issues]: /issues
-[LICENSE]: /LICENSE
+[documentation]: https://bluelua.github.io
 [LuaCheck]: https://github.com/mpeterv/luacheck
 [markdownlint-cli2]: https://github.com/DavidAnson/markdownlint-cli2
-[Prettier]: https://prettier.io/
-[question issue]: /issues/new?template=question.yml
-[StyLua]: https://github.com/JohnnyMorganz/StyLua
-[tests]: /tests/
