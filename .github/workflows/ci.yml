@@ -209,6 +209,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Setup MSVC Developer Command Prompt
+        if: ${{ runner.os == 'Windows' && matrix.lua-version != 'luajit' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Lua
         uses: leafo/gh-actions-lua@v13
         with:
@@ -219,6 +223,7 @@ jobs:
 
       - name: Run custom setup commands
         if: ${{ inputs.run != '' }}
+        shell: bash
         env:
           SETUP_COMMANDS: ${{ inputs.run }}
         run: |
@@ -227,18 +232,19 @@ jobs:
           ./temp_setup.sh
           rm temp_setup.sh
 
-      - name: Install LuaRocks package
+      - name: Locate rockspec
+        id: rockspec
+        shell: bash
         run: |
-          ROCKSPEC_FILE=$(ls rockspecs/*scm*.rockspec 2>/dev/null | head -n 1)
-          if [ -n "$ROCKSPEC_FILE" ]; then
-            ROCKSPEC_BASE=$(basename "$ROCKSPEC_FILE")
-            PACKAGE_NAME="${ROCKSPEC_BASE%-scm*}"
-            echo "Auto-detected package name: $PACKAGE_NAME"
-            luarocks install --dev "$PACKAGE_NAME"
-          else
+          file=$(ls rockspecs/*scm*.rockspec 2>/dev/null | head -n 1)
+          if [ -z "$file" ]; then
             echo "Error: No scm rockspec found in rockspecs/ directory."
             exit 1
           fi
+          echo "path=$file" >> "$GITHUB_OUTPUT"
+
+      - name: Install package
+        run: luarocks make ${{ steps.rockspec.outputs.path }}
 
       - name: Install Busted
         run: luarocks install busted
