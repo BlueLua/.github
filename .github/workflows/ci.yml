@@ -210,6 +210,19 @@ jobs:
       - name: Install LuaRocks
         uses: leafo/gh-actions-luarocks@v6
 
+      - name: Install LuaRocks package
+        run: |
+          ROCKSPEC_FILE=$(ls rockspecs/*scm*.rockspec 2>/dev/null | head -n 1)
+          if [ -n "$ROCKSPEC_FILE" ]; then
+            ROCKSPEC_BASE=$(basename "$ROCKSPEC_FILE")
+            PACKAGE_NAME="${ROCKSPEC_BASE%-scm*}"
+            echo "Auto-detected package name: $PACKAGE_NAME"
+            luarocks install --dev "$PACKAGE_NAME"
+          else
+            echo "Error: No scm rockspec found in rockspecs/ directory."
+            exit 1
+          fi
+
       - name: Install Busted
         run: luarocks install busted
 
