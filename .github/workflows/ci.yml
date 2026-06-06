@@ -38,6 +38,11 @@ on:
         type: boolean
         required: false
         default: false
+      run:
+        description: "Custom shell commands to run before building/testing"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -209,6 +214,16 @@ jobs:
 
       - name: Install LuaRocks
         uses: leafo/gh-actions-luarocks@v6
+
+      - name: Run custom setup commands
+        if: ${{ inputs.run != '' }}
+        env:
+          SETUP_COMMANDS: ${{ inputs.run }}
+        run: |
+          echo "$SETUP_COMMANDS" > temp_setup.sh
+          chmod +x temp_setup.sh
+          ./temp_setup.sh
+          rm temp_setup.sh
 
       - name: Install LuaRocks package
         run: |
