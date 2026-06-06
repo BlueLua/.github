@@ -43,6 +43,11 @@ on:
         type: string
         required: false
         default: ""
+      docs:
+        description: "Trigger bluelua.github.io docs generation on types change"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -70,6 +75,7 @@ jobs:
       run-luacheck: ${{ steps.process.outputs.run-luacheck }}
       run-prettier: ${{ steps.process.outputs.run-prettier }}
       run-tests: ${{ steps.process.outputs.run-tests }}
+      run-docs: ${{ steps.process.outputs.run-docs }}
       os: ${{ steps.os-matrix.outputs.os }}
     steps:
       - name: Checkout code
@@ -89,6 +95,8 @@ jobs:
               - '.busted'
               - '.stylua.toml'
               - '.prettierrc*'
+            types:
+              - 'types/**'
 
       - name: Process changes
         id: process
@@ -100,6 +108,7 @@ jobs:
           RUN_LUACHECK="false"
           RUN_PRETTIER="false"
           RUN_TESTS="false"
+          RUN_DOCS="false"
 
           # Only run path-based change detection if not manually triggered via workflow_dispatch
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
@@ -135,12 +144,18 @@ jobs:
                 fi
               done"
             fi
+
+            # Check for types changes using paths-filter output
+            if [ "${{ steps.filter.outputs.types }}" = "true" ]; then
+              RUN_DOCS="true"
+            fi
           fi
 
           echo "run-stylua=$RUN_STYLUA"     >> "$GITHUB_OUTPUT"
           echo "run-luacheck=$RUN_LUACHECK" >> "$GITHUB_OUTPUT"
           echo "run-prettier=$RUN_PRETTIER" >> "$GITHUB_OUTPUT"
           echo "run-tests=$RUN_TESTS"       >> "$GITHUB_OUTPUT"
+          echo "run-docs=$RUN_DOCS"         >> "$GITHUB_OUTPUT"
 
       - name: Determine OS matrix
         id: os-matrix
@@ -253,3 +268,15 @@ jobs:
 
       - name: Run Tests
         run: busted
+
+  docs:
+    needs: changes
+    if: ${{ (needs.changes.outputs.run-docs == 'true' || inputs.docs) && github.ref_name == 'main' }}
+    name: Run Docs Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run bluelua.github.io docs
+        run: |
+          gh workflow run docs.yml --repo BlueLua/bluelua.github.io
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_TRIGGER_TOKEN }}
