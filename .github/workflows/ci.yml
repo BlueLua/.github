@@ -101,38 +101,40 @@ jobs:
           RUN_PRETTIER="false"
           RUN_TESTS="false"
 
-          # Filter the changes list to see what needs to run
-          if [ -n "$FILES" ]; then
-            eval "for f in $FILES; do
-              if [ -f \"\$f\" ]; then
-                # StyLua
-                if [[ \"\$f\" =~ \.lua$ ]] || \
-                   [[ \"\$f\" =~ \.stylua\.toml$ ]]; then
-                  RUN_STYLUA=\"true\"
-                fi
+          # Only run path-based change detection if not manually triggered via workflow_dispatch
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            if [ -n "$FILES" ]; then
+              eval "for f in $FILES; do
+                if [ -f \"\$f\" ]; then
+                  # StyLua
+                  if [[ \"\$f\" =~ \.lua$ ]] || \
+                     [[ \"\$f\" =~ \.stylua\.toml$ ]]; then
+                    RUN_STYLUA=\"true\"
+                  fi
 
-                # Luacheck
-                if [[ \"\$f\" =~ \.lua$ ]] && \
-                   [[ \"\$f\" =~ ^$SRC_DIR/ ]]; then
-                  RUN_LUACHECK=\"true\"
-                fi
+                  # Luacheck
+                  if [[ \"\$f\" =~ \.lua$ ]] && \
+                     [[ \"\$f\" =~ ^$SRC_DIR/ ]]; then
+                    RUN_LUACHECK=\"true\"
+                  fi
 
-                # Prettier
-                if ( [[ \"\$f\" =~ \.md$ ]] && [[ ! \"\$f\" =~ CHANGELOG\.md$ ]] ) || \
-                   [[ \"\$f\" =~ \.prettierrc ]]; then
-                  RUN_PRETTIER=\"true\"
-                fi
+                  # Prettier
+                  if ( [[ \"\$f\" =~ \.md$ ]] && [[ ! \"\$f\" =~ CHANGELOG\.md$ ]] ) || \
+                     [[ \"\$f\" =~ \.prettierrc ]]; then
+                    RUN_PRETTIER=\"true\"
+                  fi
 
-                # Busted
-                if [[ \"\$f\" =~ \.test\.lua$ ]] || \
-                   [[ \"\$f\" =~ ^tests/ ]] || \
-                   [[ \"\$f\" =~ \.c$ ]] || \
-                   [[ \"\$f\" =~ \.h$ ]] || \
-                   [[ \"\$f\" =~ \.busted$ ]]; then
-                  RUN_TESTS=\"true\"
+                  # Busted
+                  if [[ \"\$f\" =~ \.test\.lua$ ]] || \
+                     [[ \"\$f\" =~ ^tests/ ]] || \
+                     [[ \"\$f\" =~ \.c$ ]] || \
+                     [[ \"\$f\" =~ \.h$ ]] || \
+                     [[ \"\$f\" =~ \.busted$ ]]; then
+                    RUN_TESTS=\"true\"
+                  fi
                 fi
-              fi
-            done"
+              done"
+            fi
           fi
 
           echo "run-stylua=$RUN_STYLUA"     >> "$GITHUB_OUTPUT"
