@@ -1,0 +1,217 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      linux:
+        description: "Run tests on Linux (ubuntu-latest)"
+        type: boolean
+        required: false
+        default: true
+      macos:
+        description: "Run tests on macOS (macos-latest)"
+        type: boolean
+        required: false
+        default: false
+      windows:
+        description: "Run tests on Windows (windows-latest)"
+        type: boolean
+        required: false
+        default: false
+      stylua:
+        description: "Run StyLua formatter linting"
+        type: boolean
+        required: false
+        default: false
+      luacheck:
+        description: "Run Luacheck static analysis"
+        type: boolean
+        required: false
+        default: false
+      prettier:
+        description: "Run Prettier formatting check on Markdown"
+        type: boolean
+        required: false
+        default: false
+      tests:
+        description: "Run Busted unit tests"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  detect-source-dir:
+    name: Detect Source Directory
+    runs-on: ubuntu-latest
+    outputs:
+      source-dir: ${{ steps.detect.outputs.source-dir }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Determine source directory
+        id: detect
+        run: echo "source-dir=$([ -d "src" ] && echo "src" || echo "lua")" >> "$GITHUB_OUTPUT"
+
+  changes:
+    name: Change Detection
+    needs: detect-source-dir
+    runs-on: ubuntu-latest
+    outputs:
+      run-stylua: ${{ steps.process.outputs.run-stylua }}
+      run-luacheck: ${{ steps.process.outputs.run-luacheck }}
+      run-prettier: ${{ steps.process.outputs.run-prettier }}
+      run-tests: ${{ steps.process.outputs.run-tests }}
+      os: ${{ steps.os-matrix.outputs.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          list-files: "shell"
+          filters: |
+            changes:
+              - '**/*.c'
+              - '**/*.h'
+              - '**/*.lua'
+              - '**/*.md'
+              - '.busted'
+              - '.stylua.toml'
+              - '.prettierrc*'
+
+      - name: Process changes
+        id: process
+        run: |
+          FILES='${{ steps.filter.outputs.changes_files }}'
+          SRC_DIR='${{ needs.detect-source-dir.outputs.source-dir }}'
+
+          RUN_STYLUA="false"
+          RUN_LUACHECK="false"
+          RUN_PRETTIER="false"
+          RUN_TESTS="false"
+
+          # Filter the changes list to see what needs to run
+          if [ -n "$FILES" ]; then
+            eval "for f in $FILES; do
+              if [ -f \"\$f\" ]; then
+                # StyLua
+                if [[ \"\$f\" =~ \.lua$ ]] || \
+                   [[ \"\$f\" =~ \.stylua\.toml$ ]]; then
+                  RUN_STYLUA=\"true\"
+                fi
+
+                # Luacheck
+                if [[ \"\$f\" =~ \.lua$ ]] && \
+                   [[ \"\$f\" =~ ^$SRC_DIR/ ]]; then
+                  RUN_LUACHECK=\"true\"
+                fi
+
+                # Prettier
+                if [[ \"\$f\" =~ \.md$ ]] || \
+                   [[ \"\$f\" =~ \.prettierrc ]]; then
+                  RUN_PRETTIER=\"true\"
+                fi
+
+                # Busted
+                if [[ \"\$f\" =~ \.test\.lua$ ]] || \
+                   [[ \"\$f\" =~ ^tests/ ]] || \
+                   [[ \"\$f\" =~ \.c$ ]] || \
+                   [[ \"\$f\" =~ \.h$ ]] || \
+                   [[ \"\$f\" =~ \.busted$ ]]; then
+                  RUN_TESTS=\"true\"
+                fi
+              fi
+            done"
+          fi
+
+          echo "run-stylua=$RUN_STYLUA"     >> "$GITHUB_OUTPUT"
+          echo "run-luacheck=$RUN_LUACHECK" >> "$GITHUB_OUTPUT"
+          echo "run-prettier=$RUN_PRETTIER" >> "$GITHUB_OUTPUT"
+          echo "run-tests=$RUN_TESTS"       >> "$GITHUB_OUTPUT"
+
+      - name: Determine OS matrix
+        id: os-matrix
+        run: |
+          OS_LIST=""
+          [ "${{ inputs.linux   }}" = "true" ] && OS_LIST="$OS_LIST, \"ubuntu-latest\""
+          [ "${{ inputs.macos   }}" = "true" ] && OS_LIST="$OS_LIST, \"macos-latest\""
+          [ "${{ inputs.windows }}" = "true" ] && OS_LIST="$OS_LIST, \"windows-latest\""
+          OS_LIST="[${OS_LIST#, }]"
+          [ "$OS_LIST" = "[]" ] && OS_LIST='["ubuntu-latest"]'
+          echo "os=$OS_LIST" >> "$GITHUB_OUTPUT"
+
+  stylua:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-stylua == 'true' || inputs.stylua }}
+    name: StyLua Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run StyLua
+        uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check .
+
+  luacheck:
+    needs: [changes, detect-source-dir]
+    if: ${{ needs.changes.outputs.run-luacheck == 'true' || inputs.luacheck }}
+    name: Luacheck Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run Luacheck
+        uses: lunarmodules/luacheck@v1
+        with:
+          args: ${{ needs.detect-source-dir.outputs.source-dir }}
+
+  prettier:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-prettier == 'true' || inputs.prettier }}
+    name: Prettier Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run Prettier
+        run: npx prettier --check "**/*.md"
+
+  tests:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-tests == 'true' || inputs.tests }}
+    name: Run Tests (${{ matrix.os }}, ${{ matrix.lua-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lua-version: ["5.1", "5.2", "5.3", "5.4", "5.5", "luajit"]
+        os: ${{ fromJSON(needs.changes.outputs.os) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install Lua
+        uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: ${{ matrix.lua-version }}
+
+      - name: Install LuaRocks
+        uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install Busted
+        run: luarocks install busted
+
+      - name: Run Tests
+        run: busted
