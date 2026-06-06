@@ -118,7 +118,7 @@ jobs:
                 fi
 
                 # Prettier
-                if [[ \"\$f\" =~ \.md$ ]] || \
+                if ( [[ \"\$f\" =~ \.md$ ]] && [[ ! \"\$f\" =~ CHANGELOG\.md$ ]] ) || \
                    [[ \"\$f\" =~ \.prettierrc ]]; then
                   RUN_PRETTIER=\"true\"
                 fi
@@ -191,7 +191,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run Prettier
-        run: npx prettier --check "**/*.md"
+        run: npx prettier --check "**/*.md" "!CHANGELOG.md"
 
   tests:
     needs: changes
