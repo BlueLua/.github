@@ -171,7 +171,7 @@ jobs:
   stylua:
     needs: changes
     if: ${{ needs.changes.outputs.run-stylua == 'true' || inputs.stylua }}
-    name: StyLua Lint
+    name: StyLua
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -187,7 +187,7 @@ jobs:
   luacheck:
     needs: [changes, detect-source-dir]
     if: ${{ needs.changes.outputs.run-luacheck == 'true' || inputs.luacheck }}
-    name: Luacheck Static Analysis
+    name: Luacheck
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -201,7 +201,7 @@ jobs:
   prettier:
     needs: changes
     if: ${{ needs.changes.outputs.run-prettier == 'true' || inputs.prettier }}
-    name: Prettier Lint
+    name: Prettier
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
