@@ -3,6 +3,10 @@ name: CI
 on:
   workflow_call:
     inputs:
+      package:
+        description: "The name of the package"
+        type: string
+        required: true
       linux:
         description: "Run tests on Linux (ubuntu-latest)"
         type: boolean
@@ -253,19 +257,8 @@ jobs:
           ./temp_setup.sh
           rm temp_setup.sh
 
-      - name: Locate rockspec
-        id: rockspec
-        shell: bash
-        run: |
-          file=$(ls rockspecs/*scm*.rockspec 2>/dev/null | head -n 1)
-          if [ -z "$file" ]; then
-            echo "Error: No scm rockspec found in rockspecs/ directory."
-            exit 1
-          fi
-          echo "path=$file" >> "$GITHUB_OUTPUT"
-
       - name: Install package
-        run: luarocks make ${{ steps.rockspec.outputs.path }}
+        run: luarocks install --dev ${{ inputs.package }}
 
       - name: Install Busted
         run: luarocks install busted
