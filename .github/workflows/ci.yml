@@ -6,52 +6,42 @@ on:
       linux:
         description: "Run tests on Linux (ubuntu-latest)"
         type: boolean
-        required: false
         default: true
       macos:
         description: "Run tests on macOS (macos-latest)"
         type: boolean
-        required: false
         default: false
       windows:
         description: "Run tests on Windows (windows-latest)"
         type: boolean
-        required: false
         default: false
       stylua:
         description: "Run StyLua formatter linting"
         type: boolean
-        required: false
         default: false
       luacheck:
         description: "Run Luacheck static analysis"
         type: boolean
-        required: false
         default: false
       prettier:
         description: "Run Prettier formatting check on Markdown"
         type: boolean
-        required: false
         default: false
       tests:
         description: "Run Busted unit tests"
         type: boolean
-        required: false
         default: false
       run:
         description: "Custom shell commands to run before building/testing"
         type: string
-        required: false
         default: ""
       docs:
         description: "Trigger bluelua.github.io docs generation on types change"
         type: boolean
-        required: false
         default: false
       release-please:
         description: "Run Release Please"
         type: boolean
-        required: false
         default: false
 
 permissions:
