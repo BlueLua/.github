@@ -43,18 +43,28 @@ on:
         description: "Release Please"
         type: boolean
         default: false
+      luarocks-upload:
+        description: "Upload to LuaRocks"
+        type: boolean
+        default: false
 jobs:
   ci:
     uses: BlueLua/.github/.github/workflows/ci.yml@main
+    secrets: inherit
     # prettier-ignore
     with:
+      package: ${{ github.event.repository.name }}
+
       linux:   ${{ inputs.linux   || github.event_name != 'workflow_dispatch' }}
       macos:   ${{ inputs.macos   || github.event_name != 'workflow_dispatch' }}
       windows: ${{ inputs.windows || github.event_name != 'workflow_dispatch' }}
 
-      stylua:         ${{ inputs.stylua         }}
-      luacheck:       ${{ inputs.luacheck       }}
-      markdownlint:   ${{ inputs.markdownlint   }}
-      tests:          ${{ inputs.tests          }}
-      docs:           ${{ inputs.docs           }}
-      release-please: ${{ inputs.release-please }}
+      stylua:       ${{ inputs.stylua       }}
+      luacheck:     ${{ inputs.luacheck     }}
+      markdownlint: ${{ inputs.markdownlint }}
+
+      tests: ${{ inputs.tests }}
+      docs:  ${{ inputs.docs  }}
+
+      release-please:  ${{ inputs.release-please  }}
+      luarocks-upload: ${{ inputs.luarocks-upload }}
