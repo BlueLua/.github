@@ -23,8 +23,8 @@ on:
         description: "Run Luacheck static analysis"
         type: boolean
         default: false
-      prettier:
-        description: "Run Prettier formatting check on Markdown"
+      markdownlint:
+        description: "Run markdownlint-cli2 on Markdown"
         type: boolean
         default: false
       tests:
@@ -68,7 +68,7 @@ jobs:
     outputs:
       run-stylua: ${{ steps.process.outputs.run-stylua }}
       run-luacheck: ${{ steps.process.outputs.run-luacheck }}
-      run-prettier: ${{ steps.process.outputs.run-prettier }}
+      run-markdownlint: ${{ steps.process.outputs.run-markdownlint }}
       run-tests: ${{ steps.process.outputs.run-tests }}
       run-docs: ${{ steps.process.outputs.run-docs }}
       run-release-please: ${{ steps.process.outputs.run-release-please }}
@@ -91,7 +91,7 @@ jobs:
               - 'CHANGELOG.md'
               - '.busted'
               - '.stylua.toml'
-              - '.prettierrc*'
+              - '.markdownlint*'
             types:
               - 'types/**'
 
@@ -103,7 +103,7 @@ jobs:
 
           RUN_STYLUA="false"
           RUN_LUACHECK="false"
-          RUN_PRETTIER="false"
+          RUN_MARKDOWNLINT="false"
           RUN_TESTS="false"
           RUN_DOCS="false"
           RUN_RELEASE_PLEASE="false"
@@ -125,10 +125,10 @@ jobs:
                     RUN_LUACHECK=\"true\"
                   fi
 
-                  # Prettier
+                  # Markdownlint
                   if ( [[ \"\$f\" =~ \.md$ ]] && [[ ! \"\$f\" =~ CHANGELOG\.md$ ]] ) || \
-                     [[ \"\$f\" =~ \.prettierrc ]]; then
-                    RUN_PRETTIER=\"true\"
+                     [[ \"\$f\" =~ \.markdownlint ]]; then
+                    RUN_MARKDOWNLINT=\"true\"
                   fi
 
                   # Busted
@@ -157,7 +157,7 @@ jobs:
 
           echo "run-stylua=$RUN_STYLUA"                 >> "$GITHUB_OUTPUT"
           echo "run-luacheck=$RUN_LUACHECK"             >> "$GITHUB_OUTPUT"
-          echo "run-prettier=$RUN_PRETTIER"             >> "$GITHUB_OUTPUT"
+          echo "run-markdownlint=$RUN_MARKDOWNLINT"     >> "$GITHUB_OUTPUT"
           echo "run-tests=$RUN_TESTS"                   >> "$GITHUB_OUTPUT"
           echo "run-docs=$RUN_DOCS"                     >> "$GITHUB_OUTPUT"
           echo "run-release-please=$RUN_RELEASE_PLEASE" >> "$GITHUB_OUTPUT"
@@ -204,17 +204,17 @@ jobs:
         with:
           args: ${{ needs.detect-source-dir.outputs.source-dir }}
 
-  prettier:
+  markdownlint:
     needs: changes
-    if: ${{ needs.changes.outputs.run-prettier == 'true' || inputs.prettier }}
-    name: Prettier
+    if: ${{ needs.changes.outputs.run-markdownlint == 'true' || inputs.markdownlint }}
+    name: Markdownlint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Run Prettier
-        run: npx prettier --check "**/*.md" "!CHANGELOG.md"
+      - name: Run markdownlint-cli2
+        run: npx markdownlint-cli2 "**/*.md" "#CHANGELOG.md"
 
   tests:
     needs: changes
