@@ -272,7 +272,7 @@ jobs:
   docs:
     needs: changes
     if: ${{ (needs.changes.outputs.run-docs == 'true' || inputs.docs) && github.ref_name == 'main' }}
-    name: Run Docs Generation
+    name: Docs
     runs-on: ubuntu-latest
     steps:
       - name: Run bluelua.github.io docs
