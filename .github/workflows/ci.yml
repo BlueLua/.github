@@ -162,6 +162,7 @@ jobs:
           echo "run-docs=$RUN_DOCS"                     >> "$GITHUB_OUTPUT"
           echo "run-release-please=$RUN_RELEASE_PLEASE" >> "$GITHUB_OUTPUT"
 
+      # Fallback to Linux if no OS was selected
       - name: Determine OS matrix
         id: os-matrix
         run: |
