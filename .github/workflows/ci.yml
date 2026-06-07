@@ -241,8 +241,6 @@ jobs:
 
       - name: Install LuaRocks
         uses: luarocks/gh-actions-luarocks@master
-        with:
-          luaRocksVersion: "3.13.0"
 
       - name: Run custom setup commands
         if: ${{ inputs.run != '' }}
