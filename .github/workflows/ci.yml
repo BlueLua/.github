@@ -48,6 +48,11 @@ on:
         type: boolean
         required: false
         default: false
+      release-please:
+        description: "Run Release Please"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -76,6 +81,7 @@ jobs:
       run-prettier: ${{ steps.process.outputs.run-prettier }}
       run-tests: ${{ steps.process.outputs.run-tests }}
       run-docs: ${{ steps.process.outputs.run-docs }}
+      run-release-please: ${{ steps.process.outputs.run-release-please }}
       os: ${{ steps.os-matrix.outputs.os }}
     steps:
       - name: Checkout code
@@ -92,6 +98,7 @@ jobs:
               - '**/*.h'
               - '**/*.lua'
               - '**/*.md'
+              - 'CHANGELOG.md'
               - '.busted'
               - '.stylua.toml'
               - '.prettierrc*'
@@ -109,6 +116,7 @@ jobs:
           RUN_PRETTIER="false"
           RUN_TESTS="false"
           RUN_DOCS="false"
+          RUN_RELEASE_PLEASE="false"
 
           # Only run path-based change detection if not manually triggered via workflow_dispatch
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
@@ -141,6 +149,12 @@ jobs:
                      [[ \"\$f\" =~ \.busted$ ]]; then
                     RUN_TESTS=\"true\"
                   fi
+
+                  # Release Please
+                  if [[ \"\$f\" =~ ^$SRC_DIR/ ]] || \
+                     [[ \"\$f\" =~ ^CHANGELOG\.md$ ]]; then
+                    RUN_RELEASE_PLEASE=\"true\"
+                  fi
                 fi
               done"
             fi
@@ -151,11 +165,12 @@ jobs:
             fi
           fi
 
-          echo "run-stylua=$RUN_STYLUA"     >> "$GITHUB_OUTPUT"
-          echo "run-luacheck=$RUN_LUACHECK" >> "$GITHUB_OUTPUT"
-          echo "run-prettier=$RUN_PRETTIER" >> "$GITHUB_OUTPUT"
-          echo "run-tests=$RUN_TESTS"       >> "$GITHUB_OUTPUT"
-          echo "run-docs=$RUN_DOCS"         >> "$GITHUB_OUTPUT"
+          echo "run-stylua=$RUN_STYLUA"                 >> "$GITHUB_OUTPUT"
+          echo "run-luacheck=$RUN_LUACHECK"             >> "$GITHUB_OUTPUT"
+          echo "run-prettier=$RUN_PRETTIER"             >> "$GITHUB_OUTPUT"
+          echo "run-tests=$RUN_TESTS"                   >> "$GITHUB_OUTPUT"
+          echo "run-docs=$RUN_DOCS"                     >> "$GITHUB_OUTPUT"
+          echo "run-release-please=$RUN_RELEASE_PLEASE" >> "$GITHUB_OUTPUT"
 
       - name: Determine OS matrix
         id: os-matrix
@@ -280,3 +295,23 @@ jobs:
           gh workflow run docs.yml --repo BlueLua/bluelua.github.io
         env:
           GH_TOKEN: ${{ secrets.DOCS_TRIGGER_TOKEN }}
+
+  release-please:
+    needs: changes
+    if: >-
+      ${{
+        inputs.release-please &&
+        (needs.changes.outputs.run-release-please == 'true' || github.event_name == 'workflow_dispatch') &&
+        github.ref_name == 'main'
+      }}
+    name: Release Please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
