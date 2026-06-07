@@ -255,11 +255,7 @@ jobs:
         shell: bash
         env:
           SETUP_COMMANDS: ${{ inputs.run }}
-        run: |
-          echo "$SETUP_COMMANDS" > temp_setup.sh
-          chmod +x temp_setup.sh
-          ./temp_setup.sh
-          rm temp_setup.sh
+        run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
         run: luarocks install --dev ${{ inputs.package }}
