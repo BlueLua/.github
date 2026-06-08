@@ -222,11 +222,7 @@ jobs:
 
   release-please:
     needs: changes
-    if: >-
-      ${{
-        inputs.release-please ||
-        (needs.changes.outputs.run-release-please == 'true' && github.ref_name == 'main')
-      }}
+    if: ${{ inputs.release-please || (needs.changes.outputs.run-release-please == 'true' && github.ref_name == 'main') }}
     name: Release Please
     runs-on: ubuntu-latest
     permissions:
