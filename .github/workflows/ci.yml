@@ -238,7 +238,7 @@ jobs:
 
   publish-luarocks:
     needs: tests
-    if: ${{ inputs.luarocks-upload && startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ inputs.luarocks-upload || startsWith(github.ref, 'refs/tags/') }}
     name: Publish to LuaRocks
     runs-on: ubuntu-latest
     steps:
