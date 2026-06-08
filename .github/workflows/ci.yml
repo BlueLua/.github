@@ -282,9 +282,8 @@ jobs:
     needs: changes
     if: >-
       ${{
-        inputs.release-please &&
-        (needs.changes.outputs.run-release-please == 'true' || github.event_name == 'workflow_dispatch') &&
-        github.ref_name == 'main'
+        inputs.release-please ||
+        (needs.changes.outputs.run-release-please == 'true' && github.ref_name == 'main')
       }}
     name: Release Please
     runs-on: ubuntu-latest
