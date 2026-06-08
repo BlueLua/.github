@@ -8,15 +8,15 @@ on:
         type: string
         default: ${{ github.event.repository.name }}
       linux:
-        description: "Run tests on Linux (ubuntu-latest)"
+        description: "Run tests on Linux"
         type: boolean
         default: true
       macos:
-        description: "Run tests on macOS (macos-latest)"
+        description: "Run tests on macOS"
         type: boolean
         default: false
       windows:
-        description: "Run tests on Windows (windows-latest)"
+        description: "Run tests on Windows"
         type: boolean
         default: false
       stylua:
