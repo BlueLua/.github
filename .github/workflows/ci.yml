@@ -6,7 +6,7 @@ on:
       package:
         description: "The name of the package"
         type: string
-        required: true
+        default: ${{ github.event.repository.name }}
       linux:
         description: "Run tests on Linux (ubuntu-latest)"
         type: boolean
