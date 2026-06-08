@@ -108,7 +108,7 @@ jobs:
             release_please:
               - 'src/**'
               - 'lua/**'
-              - 'CHANGELOG.md'
+              - '.github/release-please-manifest.json'
             types:
               - '**/*.d.lua'
 
