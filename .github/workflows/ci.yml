@@ -117,11 +117,13 @@ jobs:
               - '!(CHANGELOG).md'
               - '.markdownlint*'
             tests:
-              - '**/*.test.lua'
-              - 'tests/**'
+              - '.busted'
               - '**/*.c'
               - '**/*.h'
-              - '.busted'
+              - '**/*.test.lua'
+              - 'lua/**/*.lua'
+              - 'src/**/*.lua'
+              - 'tests/**'
             release_please:
               - 'src/**'
               - 'lua/**'
