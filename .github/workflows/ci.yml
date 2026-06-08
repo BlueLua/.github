@@ -210,13 +210,12 @@ jobs:
 
   docs:
     needs: changes
-    if: ${{ (needs.changes.outputs.run-docs == 'true' || inputs.docs) && github.ref_name == 'main' }}
+    if: ${{ inputs.docs || (needs.changes.outputs.run-docs == 'true' && github.ref_name == 'main') }}
     name: Docs
     runs-on: ubuntu-latest
     steps:
       - name: Run bluelua.github.io docs
-        run: |
-          gh workflow run docs.yml --repo BlueLua/bluelua.github.io
+        run: gh workflow run docs.yml --repo BlueLua/bluelua.github.io
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
