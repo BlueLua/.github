@@ -43,8 +43,12 @@ on:
         description: "Run Release Please"
         type: boolean
         default: false
-      luarocks-upload:
-        description: "Upload the package to LuaRocks"
+      publish-dev:
+        description: "Publish development version to LuaRocks"
+        type: boolean
+        default: false
+      publish-release:
+        description: "Publish release version to LuaRocks"
         type: boolean
         default: false
 
@@ -106,12 +110,8 @@ jobs:
       run-tests: ${{ steps.filter.outputs.tests }}
       run-docs: ${{ steps.filter.outputs.types }}
       run-release-please: ${{ steps.filter.outputs.release_please }}
-      run-luarocks: >-
-        ${{
-          inputs.luarocks-upload ||
-          startsWith(github.ref, 'refs/tags/') ||
-          (steps.filter.outputs.rockspec == 'true' && github.ref_name == 'main')
-        }}
+      run-publish-dev: ${{ inputs.publish-dev || (steps.filter.outputs.rockspec == 'true' && github.ref_name == 'main') }}
+      run-publish-release: ${{ inputs.publish-release || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -198,7 +198,8 @@ jobs:
       ${{
         needs.changes.outputs.run-tests == 'true' ||
         inputs.tests ||
-        needs.changes.outputs.run-luarocks == 'true'
+        needs.changes.outputs.run-publish-dev == 'true' ||
+        needs.changes.outputs.run-publish-release == 'true'
       }}
     name: Run Tests (${{ matrix.os }}, ${{ matrix.lua-version }})
     runs-on: ${{ matrix.os }}
@@ -274,7 +275,7 @@ jobs:
 
   publish-luarocks:
     needs: [tests, changes, metadata]
-    if: ${{ needs.changes.outputs.run-luarocks == 'true' }}
+    if: ${{ needs.changes.outputs.run-publish-dev == 'true' || needs.changes.outputs.run-publish-release == 'true' }}
     name: Publish to LuaRocks
     runs-on: ubuntu-latest
     steps:
@@ -300,11 +301,16 @@ jobs:
             exit 1
           fi
 
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            raw_version="${{ github.ref_name }}"
-            raw_version="${raw_version#v}"
-            VERSION="${raw_version}-1"
-            TAG_VAL="v${raw_version}"
+          if [ "${{ needs.changes.outputs.run-publish-release }}" == "true" ]; then
+            if [[ "${{ github.ref }}" != refs/tags/* ]]; then
+              echo "Error: Release version not found. Make sure you run on a tag ref." >&2
+              exit 1
+            fi
+
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            TAG_VAL="v${VERSION}"
+            VERSION="${VERSION}-1"
             ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
             sed -e "s/version = .*/version = \"${VERSION}\"/" \
                 -e "s/source = {/source = {\n  tag = \"${TAG_VAL}\",/" \
