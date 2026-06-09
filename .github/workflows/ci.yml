@@ -221,12 +221,6 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
-        if: ${{ runner.os != 'Windows' }}
-        shell: bash
-        run: luarocks install *.rockspec
-
-      - name: Install package
-        if: ${{ runner.os == 'Windows' }}
         shell: pwsh
         run: |
           $rockspec = Get-ChildItem -Path . -Filter "*.rockspec" | Select-Object -First 1
