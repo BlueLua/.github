@@ -85,6 +85,14 @@ jobs:
 
   matrix:
     name: Setup Matrix
+    needs: changes
+    if: >-
+      ${{
+        needs.changes.outputs.run-tests == 'true' ||
+        inputs.tests ||
+        needs.changes.outputs.run-publish-dev == 'true' ||
+        needs.changes.outputs.run-publish-release == 'true'
+      }}
     runs-on: ubuntu-latest
     outputs:
       os: ${{ steps.os-matrix.outputs.os }}
