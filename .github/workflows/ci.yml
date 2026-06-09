@@ -221,6 +221,7 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
+        shell: bash
         run: luarocks install *.rockspec
 
       - name: Install Busted
