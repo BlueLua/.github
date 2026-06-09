@@ -53,7 +53,7 @@ permissions:
 
 jobs:
   metadata:
-    name: Detect metadata
+    name: Detect Metadata
     runs-on: ubuntu-latest
     outputs:
       source-dir: ${{ steps.detect.outputs.source-dir }}
