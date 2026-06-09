@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       source-dir: ${{ steps.detect.outputs.source-dir }}
+      package-name: ${{ steps.detect.outputs.package-name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
