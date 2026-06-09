@@ -254,9 +254,10 @@ jobs:
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
 
+  
   publish-luarocks:
-    needs: tests
-    if: ${{ inputs.luarocks-upload || startsWith(github.ref, 'refs/tags/') }}
+    needs: [tests, changes, metadata]
+    if: ${{ inputs.luarocks-upload || startsWith(github.ref, 'refs/tags/') || (needs.changes.outputs.run-luarocks == 'true' && github.ref_name == 'main') }}
     name: Publish to LuaRocks
     runs-on: ubuntu-latest
     steps:
@@ -266,14 +267,44 @@ jobs:
       - name: Install Lua
         uses: luarocks/gh-actions-lua@master
         with:
-          luaVersion: "5.1"
+          luaVersion: "5.5"
 
       - name: Install LuaRocks
         uses: luarocks/gh-actions-luarocks@master
 
-      - name: Upload to LuaRocks
+      - name: Build and Upload to LuaRocks
+        shell: bash
+        env:
+          LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          ROCKSPEC="${{ needs.metadata.outputs.package-name }}-${VERSION}-1.rockspec"
-          cp .rockspec $ROCKSPEC
-          luarocks upload $ROCKSPEC --api-key="${{ secrets.LUAROCKS_API_KEY }}"
+          # Determine the version and tag
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            raw_version="${{ github.ref_name }}"
+            raw_version="${raw_version#v}"
+            VERSION="${raw_version}-1"
+            TAG_VAL="v${raw_version}"
+          else
+            VERSION="scm-1"
+          fi
+
+          ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
+          if [ -z "$ROCKSPEC" ]; then
+            echo "No rockspec file found in the root directory!"
+            exit 1
+          fi
+
+          ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
+
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            sed -e "s/version = .*/version = \"${VERSION}\"/" \
+                -e "s/source = {/source = {\n  tag = \"${TAG_VAL}\",/" \
+                "$ROCKSPEC" > "$ROCKSPEC_FILENAME"
+          else
+            cp "$ROCKSPEC" "$ROCKSPEC_FILENAME"
+          fi
+
+          echo "Generated/loaded rockspec content:"
+          cat "$ROCKSPEC_FILENAME"
+
+          # Upload to LuaRocks
+          luarocks upload "$ROCKSPEC_FILENAME" --api-key="${LUAROCKS_API_KEY}" --force
