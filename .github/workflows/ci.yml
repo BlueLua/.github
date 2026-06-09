@@ -219,8 +219,14 @@ jobs:
         run: |
           $luaCommand = Get-Command luajit -ErrorAction Stop
           $luaBindir = Split-Path -Parent $luaCommand.Source
+          $luaDir = Split-Path -Parent $luaBindir
+          $luaLibrary = Get-ChildItem -Path $luaDir -Recurse -Include lua51.lib,lua51.dll -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $luaLibrary) {
+            throw "Could not find lua51.lib or lua51.dll under $luaDir"
+          }
+
           luarocks config variables.LUA_BINDIR "$luaBindir"
-          luarocks config variables.LUA_LIBDIR "$luaBindir"
+          luarocks config variables.LUA_LIBDIR "$($luaLibrary.DirectoryName)"
           luarocks config variables.LUALIB "lua51"
 
       - name: Run custom setup commands
