@@ -129,6 +129,7 @@ jobs:
               - '.markdownlint*'
             tests:
               - '.busted'
+              - '*.rockspec'
               - '**/*.c'
               - '**/*.h'
               - '**/*.test.lua'
