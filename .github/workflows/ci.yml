@@ -213,6 +213,16 @@ jobs:
       - name: Install LuaRocks
         uses: luarocks/gh-actions-luarocks@master
 
+      - name: Configure LuaRocks for Windows LuaJIT
+        if: ${{ runner.os == 'Windows' && matrix.lua-version == 'luajit' }}
+        shell: pwsh
+        run: |
+          $luaCommand = Get-Command luajit -ErrorAction Stop
+          $luaBindir = Split-Path -Parent $luaCommand.Source
+          luarocks config variables.LUA_BINDIR "$luaBindir"
+          luarocks config variables.LUA_LIBDIR "$luaBindir"
+          luarocks config variables.LUALIB "lua51"
+
       - name: Run custom setup commands
         if: ${{ inputs.run != '' }}
         shell: bash
