@@ -56,8 +56,8 @@ permissions:
   contents: read
 
 jobs:
-  detect-source-dir:
-    name: Detect Source Directory
+  metadata:
+    name: Detect metadata
     runs-on: ubuntu-latest
     outputs:
       source-dir: ${{ steps.detect.outputs.source-dir }}
@@ -65,7 +65,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Determine source directory
+      - name: Determine metadata
         id: detect
         run: echo "source-dir=$([ -d "src" ] && echo "src" || echo "lua")" >> "$GITHUB_OUTPUT"
 
@@ -148,7 +148,7 @@ jobs:
           args: --check .
 
   luacheck:
-    needs: [changes, detect-source-dir]
+    needs: [changes, metadata]
     if: ${{ needs.changes.outputs.run-luacheck == 'true' || inputs.luacheck }}
     name: Luacheck
     runs-on: ubuntu-latest
@@ -159,7 +159,7 @@ jobs:
       - name: Run Luacheck
         uses: lunarmodules/luacheck@v1
         with:
-          args: ${{ needs.detect-source-dir.outputs.source-dir }}
+          args: ${{ needs.metadata.outputs.source-dir }}
 
   markdownlint:
     needs: changes
