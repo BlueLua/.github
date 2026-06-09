@@ -277,30 +277,23 @@ jobs:
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         run: |
-          # Determine the version and tag
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            raw_version="${{ github.ref_name }}"
-            raw_version="${raw_version#v}"
-            VERSION="${raw_version}-1"
-            TAG_VAL="v${raw_version}"
-          else
-            VERSION="scm-1"
-          fi
-
           ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
           if [ -z "$ROCKSPEC" ]; then
             echo "No rockspec file found in the root directory!"
             exit 1
           fi
 
-          ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
-
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            raw_version="${{ github.ref_name }}"
+            raw_version="${raw_version#v}"
+            VERSION="${raw_version}-1"
+            TAG_VAL="v${raw_version}"
+            ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
             sed -e "s/version = .*/version = \"${VERSION}\"/" \
                 -e "s/source = {/source = {\n  tag = \"${TAG_VAL}\",/" \
                 "$ROCKSPEC" > "$ROCKSPEC_FILENAME"
           else
-            cp "$ROCKSPEC" "$ROCKSPEC_FILENAME"
+            ROCKSPEC_FILENAME=$(basename "$ROCKSPEC")
           fi
 
           echo "Generated/loaded rockspec content:"
