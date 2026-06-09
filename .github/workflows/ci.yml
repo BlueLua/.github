@@ -302,13 +302,13 @@ jobs:
           fi
 
           if [ "${{ needs.changes.outputs.run-publish-release }}" == "true" ]; then
-            if [[ "${{ github.ref }}" != refs/tags/* ]]; then
-              echo "Error: Release version not found. Make sure you run on a tag ref." >&2
+            VERSION="${GITHUB_REF_NAME#v}"
+
+            if [ -z "$VERSION" ]; then
+              echo "Error: Release version not found. Run release publish from a tag." >&2
               exit 1
             fi
 
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
             TAG_VAL="v${VERSION}"
             VERSION="${VERSION}-1"
             ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
