@@ -141,7 +141,8 @@ jobs:
               - '.github/release-please-manifest.json'
             types:
               - '**/*.d.lua'
-
+            rockspec:
+              - '*.rockspec'
   stylua:
     needs: changes
     if: ${{ needs.changes.outputs.run-stylua == 'true' || inputs.stylua }}
