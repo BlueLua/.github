@@ -106,6 +106,7 @@ jobs:
       run-tests: ${{ steps.filter.outputs.tests }}
       run-docs: ${{ steps.filter.outputs.types }}
       run-release-please: ${{ steps.filter.outputs.release_please }}
+      run-luarocks: ${{ steps.filter.outputs.rockspec }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
