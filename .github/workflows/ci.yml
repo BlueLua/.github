@@ -221,7 +221,7 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
-        run: luarocks install --dev ${{ needs.metadata.outputs.package-name }}
+        run: luarocks install *.rockspec
 
       - name: Install Busted
         run: luarocks install busted
