@@ -186,7 +186,7 @@ jobs:
         run: npx markdownlint-cli2 "**/*.md" "#CHANGELOG.md"
 
   tests:
-    needs: [changes, matrix]
+    needs: [changes, matrix, metadata]
     if: ${{ needs.changes.outputs.run-tests == 'true' || inputs.tests }}
     name: Run Tests (${{ matrix.os }}, ${{ matrix.lua-version }})
     runs-on: ${{ matrix.os }}
