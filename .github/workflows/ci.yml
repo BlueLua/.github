@@ -3,10 +3,6 @@ name: CI
 on:
   workflow_call:
     inputs:
-      package:
-        description: "The name of the package"
-        type: string
-        default: ${{ github.event.repository.name }}
       linux:
         description: "Run tests on Linux"
         type: boolean
@@ -67,7 +63,20 @@ jobs:
 
       - name: Determine metadata
         id: detect
-        run: echo "source-dir=$([ -d "src" ] && echo "src" || echo "lua")" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "source-dir=$([ -d "src" ] && echo "src" || echo "lua")" >> "$GITHUB_OUTPUT"
+
+          ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
+          if [ -n "$ROCKSPEC" ]; then
+            ROCKSPEC_BASE=$(basename "$ROCKSPEC")
+            TEMP_NAME="${ROCKSPEC_BASE%.rockspec}"
+            TEMP_NAME="${TEMP_NAME%-*}"
+            PACKAGE_NAME="${TEMP_NAME%-*}"
+          else
+            echo "Error: No rockspec file found in the root directory."
+            exit 1
+          fi
+          echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
   matrix:
     name: Setup Matrix
@@ -207,7 +216,7 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
-        run: luarocks install --dev ${{ inputs.package }}
+        run: luarocks install --dev ${{ needs.metadata.outputs.package-name }}
 
       - name: Install Busted
         run: luarocks install busted
@@ -262,6 +271,6 @@ jobs:
       - name: Upload to LuaRocks
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          ROCKSPEC="${{ inputs.package }}-${VERSION}-1.rockspec"
+          ROCKSPEC="${{ needs.metadata.outputs.package-name }}-${VERSION}-1.rockspec"
           cp .rockspec $ROCKSPEC
           luarocks upload $ROCKSPEC --api-key="${{ secrets.LUAROCKS_API_KEY }}"
