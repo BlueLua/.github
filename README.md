@@ -1,30 +1,24 @@
 # BlueLua GitHub
 
-GitHub profile, workflows, and shared files for [BlueLua].
+Shared CI/CD workflows for [BlueLua] repositories.
 
-## Shared GitHub Actions Workflows
+## CI & CD Workflow (`ci.yml`)
 
-We provide reusable workflows to standardize and simplify CI across all
-[BlueLua] repositories.
+This workflow conditionally runs checks on relevant file changes:
 
-### CI Workflow (`ci.yml`)
+- Formatting linting with [StyLua]
+- Static analysis with [Luacheck]
+- Markdown linting with [markdownlint]
+- Unit testing with [Busted] across OS and Lua versions
+- [LuaRocks] publishing for releases and development builds
 
-This workflow runs:
+### Usage
 
-- [StyLua] for formatting
-- [Luacheck] for static analysis
-- [Prettier] for Markdown files
-- [Busted] for unit testing
-
-It runs checks conditionally on relevant file changes.
-
-#### Usage
-
-See [ci] for examples.
+See the [example configuration](examples/ci.yml) for usage details.
 
 [BlueLua]: https://github.com/BlueLua
 [StyLua]: https://github.com/JohnnyMorganz/StyLua
 [Luacheck]: https://github.com/lunarmodules/luacheck
-[Prettier]: https://prettier.io/
+[markdownlint]: https://github.com/DavidAnson/markdownlint
 [Busted]: https://lunarmodules.github.io/busted/
-[ci]: examples/ci.yml
+[LuaRocks]: https://luarocks.org
