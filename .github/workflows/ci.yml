@@ -256,14 +256,14 @@ jobs:
           SETUP_COMMANDS: ${{ inputs.run }}
         run: bash -c "$SETUP_COMMANDS"
 
+      # pwsh is used here instead of bash because on Windows, bash (Git Bash) mangles
+      # native paths in the luarocks config, causing LuaJIT detection to fail.
+      # pwsh is pre-installed on all GitHub-hosted runners (Linux, macOS, Windows).
       - name: Install package
         shell: pwsh
         run: |
           $rockspec = Get-ChildItem -Path . -Filter "*.rockspec" | Select-Object -First 1
-          if (-not $rockspec) {
-            Write-Error "No rockspec file found."
-            exit 1
-          }
+          if (-not $rockspec) { Write-Error "No rockspec file found."; exit 1 }
           luarocks install "$($rockspec.FullName)"
 
       - name: Install Busted
