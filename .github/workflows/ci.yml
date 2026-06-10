@@ -261,8 +261,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: BlueLua/bluelua.github.io/.github/workflows/docs.yml@main
-    secrets: inherit
+    uses: BlueLua/bluelua.github.io/.github/workflows/ci.yml@main
 
   release-please:
     needs: changes
