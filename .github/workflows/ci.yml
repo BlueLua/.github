@@ -79,20 +79,21 @@ jobs:
       - name: Determine metadata
         id: detect
         run: |
-          echo "source-dir=$([ -d "src" ] && echo "src" || echo "lua")" >> "$GITHUB_OUTPUT"
+          echo "source-dir=$([ -d 'src' ] && echo 'src' || echo 'lua')" >> "$GITHUB_OUTPUT"
 
           ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
           if [ -n "$ROCKSPEC" ]; then
             ROCKSPEC_BASE=$(basename "$ROCKSPEC")
-            TEMP_NAME="${ROCKSPEC_BASE%.rockspec}"
-            TEMP_NAME="${TEMP_NAME%-*}"
-            PACKAGE_NAME="${TEMP_NAME%-*}"
+            # Strip version + revision suffix; sed handles hyphenated versions (e.g. 1.0.0-beta-2).
+            PACKAGE_NAME=$(echo "${ROCKSPEC_BASE%.rockspec}" | sed 's/-[0-9].*//')
           else
-            echo "Error: No rockspec file found in the root directory."
+            echo "Error: No rockspec file found in the root directory." >&2
             exit 1
           fi
           echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
+  # NOTE: The `if` condition below is intentionally duplicated from the `tests` job.
+  # GitHub Actions has no way to share a condition, so both must be kept in sync.
   matrix:
     name: Setup Matrix
     needs: changes
@@ -128,7 +129,14 @@ jobs:
       run-tests: ${{ steps.filter.outputs.tests }}
       run-docs: ${{ steps.filter.outputs.types }}
       run-release-please: ${{ steps.filter.outputs.release_please }}
-      run-publish-dev: ${{ inputs.publish-dev || (steps.filter.outputs.rockspec == 'true' && github.ref_name == 'main') }}
+      # Guard against workflow_dispatch where paths-filter is skipped and outputs are empty strings.
+      run-publish-dev: >-
+        ${{
+          inputs.publish-dev ||
+          (github.event_name != 'workflow_dispatch' &&
+           steps.filter.outputs.rockspec == 'true' &&
+           github.ref_name == 'main')
+        }}
       run-publish-release: ${{ inputs.publish-release || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout code
@@ -147,8 +155,7 @@ jobs:
               - 'src/**/*.lua'
               - 'lua/**/*.lua'
             markdownlint:
-              - '**/*.md'
-              - '!(CHANGELOG).md'
+              - '**/!(CHANGELOG).md'
               - '.markdownlint*'
             tests:
               - '.busted'
@@ -250,13 +257,11 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
-        shell: pwsh
+        shell: bash
         run: |
-          $rockspec = Get-ChildItem -Path . -Filter "*.rockspec" | Select-Object -First 1
-          if (-not $rockspec) {
-            throw "No rockspec file found"
-          }
-          luarocks install "$($rockspec.FullName)"
+          rockspec=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
+          [ -z "$rockspec" ] && echo "Error: No rockspec file found." >&2 && exit 1
+          luarocks install "$rockspec"
 
       - name: Install Busted
         run: luarocks install busted
@@ -289,6 +294,8 @@ jobs:
           manifest-file: .github/release-please-manifest.json
 
   publish-luarocks:
+    # `tests` being skipped (not failed) does not block this job — that is intentional:
+    # publish can be triggered independently of whether tests ran (e.g. rockspec-only change).
     needs: [tests, changes, metadata]
     if: ${{ needs.changes.outputs.run-publish-dev == 'true' || needs.changes.outputs.run-publish-release == 'true' }}
     name: Publish to LuaRocks
@@ -310,9 +317,11 @@ jobs:
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         run: |
+          set -euo pipefail
+
           ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
           if [ -z "$ROCKSPEC" ]; then
-            echo "No rockspec file found in the root directory!"
+            echo "Error: No rockspec file found in the root directory." >&2
             exit 1
           fi
 
@@ -329,13 +338,15 @@ jobs:
               exit 1
             fi
 
-            TAG_VAL="v${VERSION}"
+            TAG="v${VERSION}"
             VERSION="${VERSION}-1"
             ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
             sed -e "s/version = .*/version = \"${VERSION}\"/" \
-                -e "s/source = {/source = {\n  tag = \"${TAG_VAL}\",/" \
+                -e "/[[:space:]]*tag = .*/d" \
+                -e "s/source = {/source = {\n  tag = \"${TAG}\",/" \
                 "$ROCKSPEC" > "$ROCKSPEC_FILENAME"
           else
+            # Dev publish: upload the existing rockspec as-is.
             ROCKSPEC_FILENAME=$(basename "$ROCKSPEC")
           fi
 
