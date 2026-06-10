@@ -342,7 +342,16 @@ jobs:
             fi
 
             TAG="v${VERSION}"
-            VERSION="${VERSION}-1"
+            BASE_VERSION="$VERSION"
+
+            # Bump revision if version already exists on LuaRocks.
+            REVISION=1
+            while luarocks search --porcelain "${{ needs.metadata.outputs.package-name }}" "${BASE_VERSION}-${REVISION}" 2>/dev/null | grep -qF "${BASE_VERSION}-${REVISION}"; do
+              echo "Version ${BASE_VERSION}-${REVISION} already exists on LuaRocks, trying revision $((REVISION + 1))..."
+              REVISION=$((REVISION + 1))
+            done
+            VERSION="${BASE_VERSION}-${REVISION}"
+
             ROCKSPEC_FILENAME="${{ needs.metadata.outputs.package-name }}-${VERSION}.rockspec"
             sed -e "s/version = .*/version = \"${VERSION}\"/" \
                 -e "/[[:space:]]*tag = .*/d" \
