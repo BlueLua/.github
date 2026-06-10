@@ -257,11 +257,14 @@ jobs:
         run: bash -c "$SETUP_COMMANDS"
 
       - name: Install package
-        shell: bash
+        shell: pwsh
         run: |
-          rockspec=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
-          [ -z "$rockspec" ] && echo "Error: No rockspec file found." >&2 && exit 1
-          luarocks install "$rockspec"
+          $rockspec = Get-ChildItem -Path . -Filter "*.rockspec" | Select-Object -First 1
+          if (-not $rockspec) {
+            Write-Error "No rockspec file found."
+            exit 1
+          }
+          luarocks install "$($rockspec.FullName)"
 
       - name: Install Busted
         run: luarocks install busted
