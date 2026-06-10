@@ -123,18 +123,16 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     outputs:
-      run-stylua: ${{ steps.filter.outputs.stylua }}
-      run-luacheck: ${{ steps.filter.outputs.luacheck }}
-      run-markdownlint: ${{ steps.filter.outputs.markdownlint }}
-      run-tests: ${{ steps.filter.outputs.tests }}
-      run-docs: ${{ steps.filter.outputs.types }}
-      run-release-please: ${{ steps.filter.outputs.release_please }}
-      # Guard against workflow_dispatch where paths-filter is skipped and outputs are empty strings.
+      run-stylua: ${{ steps.filter.outputs.stylua || 'false' }}
+      run-luacheck: ${{ steps.filter.outputs.luacheck || 'false' }}
+      run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
+      run-tests: ${{ steps.filter.outputs.tests || 'false' }}
+      run-docs: ${{ steps.filter.outputs.types || 'false' }}
+      run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
       run-publish-dev: >-
         ${{
           inputs.publish-dev ||
-          (github.event_name != 'workflow_dispatch' &&
-           steps.filter.outputs.rockspec == 'true' &&
+          (steps.filter.outputs.rockspec == 'true' &&
            github.ref_name == 'main')
         }}
       run-publish-release: ${{ inputs.publish-release || startsWith(github.ref, 'refs/tags/') }}
