@@ -278,8 +278,6 @@ jobs:
       contents: write
       pull-requests: write
     uses: BlueLua/bluelua.github.io/.github/workflows/docs.yml@main
-    with:
-      run_docs: true
     secrets: inherit
 
   release-please:
