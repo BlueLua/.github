@@ -170,6 +170,7 @@ jobs:
               - '.github/release-please-manifest.json'
             types:
               - '**/*.d.lua'
+              - 'README.md'
             rockspec:
               - '*.rockspec'
 
