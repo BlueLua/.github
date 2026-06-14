@@ -83,9 +83,7 @@ jobs:
 
           ROCKSPEC=$(find . -maxdepth 1 -name "*.rockspec" -print -quit)
           if [ -n "$ROCKSPEC" ]; then
-            ROCKSPEC_BASE=$(basename "$ROCKSPEC")
-            # Strip version + revision suffix; sed handles hyphenated versions (e.g. 1.0.0-beta-2).
-            PACKAGE_NAME=$(echo "${ROCKSPEC_BASE%.rockspec}" | sed 's/-[0-9].*//')
+            PACKAGE_NAME=$(awk -F'"' '/^[[:space:]]*package[[:space:]]*=/{print $2}' "$ROCKSPEC")
           else
             echo "Error: No rockspec file found in the root directory." >&2
             exit 1
