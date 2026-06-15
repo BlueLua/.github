@@ -271,7 +271,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: BlueLua/bluelua.github.io/.github/workflows/generate-api-docs.yml@main
+    uses: BlueLua/bluelua.github.io/.github/workflows/generate-docs.yml@main
     secrets: inherit
 
   release-please:
