@@ -35,10 +35,6 @@ on:
         description: "Custom shell commands to run before building/testing"
         type: string
         default: ""
-      docs:
-        description: "Trigger bluelua.github.io docs generation on types change"
-        type: boolean
-        default: false
       release-please:
         description: "Run Release Please"
         type: boolean
@@ -125,7 +121,6 @@ jobs:
       run-luacheck: ${{ steps.filter.outputs.luacheck || 'false' }}
       run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
-      run-docs: ${{ steps.filter.outputs.types || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
       run-publish-dev: >-
         ${{
@@ -272,16 +267,6 @@ jobs:
 
       - name: Run Tests
         run: busted
-
-  docs:
-    needs: changes
-    if: ${{ inputs.docs || (needs.changes.outputs.run-docs == 'true' && github.ref_name == 'main')}}
-    name: Docs
-    permissions:
-      contents: write
-      pull-requests: write
-    uses: BlueLua/bluelua.github.io/.github/workflows/generate-docs.yml@main
-    secrets: inherit
 
   release-please:
     needs: changes
