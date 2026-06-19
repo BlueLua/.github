@@ -127,7 +127,12 @@ jobs:
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
       run-docs: ${{ steps.filter.outputs.types || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
-      run-publish-dev: ${{ inputs.publish-dev || (steps.filter.outputs.rockspec == 'true' && github.ref_name == 'main') }}
+      run-publish-dev: >-
+        ${{
+          inputs.publish-dev ||
+          (steps.filter.outputs.rockspec == 'true' && github.ref_name == 'main') ||
+          (steps.filter.outputs.publish_dev == 'true' && github.ref_name == 'main')
+        }}
       run-publish-release: ${{ inputs.publish-release || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout code
@@ -166,6 +171,10 @@ jobs:
               - 'README.md'
             rockspec:
               - '*.rockspec'
+            publish_dev:
+              - '**/*.d.lua'
+            publish_release:
+              - '**/*.d.lua'
 
   stylua:
     needs: changes
