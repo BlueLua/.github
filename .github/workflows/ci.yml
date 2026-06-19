@@ -161,6 +161,7 @@ jobs:
               - 'src/**'
               - 'lua/**'
               - '.github/release-please-manifest.json'
+              - '.github/release-please-config.json'
             types:
               - '**/*.d.lua'
               - 'README.md'
