@@ -23,6 +23,10 @@ on:
         description: "Run Luacheck static analysis"
         type: boolean
         default: false
+      lua-language-server:
+        description: "LLS"
+        type: boolean
+        default: false
       markdownlint:
         description: "Run markdownlint-cli2 on Markdown"
         type: boolean
@@ -121,6 +125,7 @@ jobs:
       run-luacheck: ${{ steps.filter.outputs.luacheck || 'false' }}
       run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
+      run-lua-language-server: ${{ steps.filter.outputs.lua_language_server || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
       run-publish-dev: >-
         ${{
@@ -171,6 +176,9 @@ jobs:
               - '**/*.d.lua'
             publish_release:
               - '**/*.d.lua'
+            lua_language_server:
+              - '**/*.lua'
+              - '.luarc.json'
 
   stylua:
     needs: changes
@@ -201,6 +209,25 @@ jobs:
         uses: lunarmodules/luacheck@v1
         with:
           args: ${{ needs.metadata.outputs.source-dir }}
+
+  lua-language-server:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-lua-language-server == 'true' || inputs.lua-language-server }}
+    name: Lua Language Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Clone LuaCATS dependencies
+        run: |
+          mkdir -p types
+          git clone --depth 1 https://github.com/LuaCATS/busted.git        types/busted
+          git clone --depth 1 https://github.com/LuaCATS/luassert.git      types/luassert
+          git clone --depth 1 https://github.com/LuaCATS/luafilesystem.git types/luafilesystem
+
+      - name: Run Lua Language Server check
+        uses: mrcjkb/lua-typecheck-action@v1
 
   markdownlint:
     needs: changes
