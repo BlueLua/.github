@@ -95,6 +95,26 @@ Run lint checks before opening a PR:
   stylua . --check
   ```
 
+- **Static Analysis & Type Checking** ([Lua Language Server]):
+
+  We use `lua-language-server` (LLS) for static type checking. You can keep
+  standard definitions (like Busted, LuaAssert, and LuaFileSystem) in a
+  shareable directory on your machine:
+
+  ```sh
+  mkdir -p ~/.local/share/lua/types
+  cd ~/.local/share/lua/types
+  git clone --depth 1 https://github.com/LuaCATS/busted.git
+  git clone --depth 1 https://github.com/LuaCATS/luassert.git
+  git clone --depth 1 https://github.com/LuaCATS/luafilesystem.git
+  ```
+
+  To run the analysis locally:
+
+  ```sh
+  lua-language-server --check .
+  ```
+
 ## Improving The Documentation
 
 - The documentation website code and guides live in the [bluelua.github.io]
@@ -119,4 +139,5 @@ This project follows [Conventional Commits] 1.0.0.
 [documentation]: https://bluelua.github.io
 [LICENSE]: LICENSE
 [LuaCheck]: https://github.com/mpeterv/luacheck
+[Lua Language Server]: https://github.com/LuaLS/lua-language-server
 [StyLua]: https://github.com/JohnnyMorganz/StyLua
