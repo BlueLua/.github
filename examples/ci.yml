@@ -28,6 +28,10 @@ on:
         description: "Luacheck"
         type: boolean
         default: false
+      lua-language-server:
+        description: "LLS"
+        type: boolean
+        default: false
       markdownlint:
         description: "Markdownlint"
         type: boolean
@@ -63,10 +67,11 @@ jobs:
       macos:   ${{ inputs.macos   || github.event_name != 'workflow_dispatch' }}
       windows: ${{ inputs.windows || github.event_name != 'workflow_dispatch' }}
 
-      tests:        ${{ inputs.tests        || false }}
-      stylua:       ${{ inputs.stylua       || false }}
-      luacheck:     ${{ inputs.luacheck     || false }}
-      markdownlint: ${{ inputs.markdownlint || false }}
+      tests:               ${{ inputs.tests               || false }}
+      stylua:              ${{ inputs.stylua              || false }}
+      luacheck:            ${{ inputs.luacheck            || false }}
+      lua-language-server: ${{ inputs.lua-language-server || false }}
+      markdownlint:        ${{ inputs.markdownlint        || false }}
 
       release-please:  ${{ inputs.release-please  || false }}
       publish-dev:     ${{ inputs.publish-dev     || false }}
