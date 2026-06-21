@@ -8,16 +8,16 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      linux:
-        description: "Linux"
+      test-linux:
+        description: "Test on Linux"
         type: boolean
         default: __LINUX__
-      macos:
-        description: "macOS"
+      test-macos:
+        description: "Test on macOS"
         type: boolean
         default: __MACOS__
-      windows:
-        description: "Windows"
+      test-windows:
+        description: "Test on Windows"
         type: boolean
         default: __WINDOWS__
       luacheck:
@@ -30,10 +30,6 @@ on:
         default: false
       markdownlint:
         description: "Markdownlint"
-        type: boolean
-        default: false
-      tests:
-        description: "Tests"
         type: boolean
         default: false
       release-please:
@@ -59,11 +55,10 @@ jobs:
     secrets: inherit
     # prettier-ignore
     with:
-      linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.linux   || __LINUX__ }}
-      macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.macos   || __MACOS__ }}
-      windows: ${{ github.event_name == 'workflow_dispatch' && inputs.windows || __WINDOWS__ }}
+      test-linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.test-linux   || __LINUX__ }}
+      test-macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.test-macos   || __MACOS__ }}
+      test-windows: ${{ github.event_name == 'workflow_dispatch' && inputs.test-windows || __WINDOWS__ }}
 
-      tests:               ${{ inputs.tests               || false }}
       luacheck:            ${{ inputs.luacheck            || false }}
       lua-language-server: ${{ inputs.lua-language-server || false }}
       markdownlint:        ${{ inputs.markdownlint        || false }}

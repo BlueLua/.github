@@ -3,15 +3,15 @@ name: CI
 on:
   workflow_call:
     inputs:
-      linux:
+      test-linux:
         description: "Run tests on Linux"
         type: boolean
         default: true
-      macos:
+      test-macos:
         description: "Run tests on macOS"
         type: boolean
         default: false
-      windows:
+      test-windows:
         description: "Run tests on Windows"
         type: boolean
         default: false
@@ -25,10 +25,6 @@ on:
         default: false
       markdownlint:
         description: "Run markdownlint-cli2 on Markdown"
-        type: boolean
-        default: false
-      tests:
-        description: "Run Busted unit tests"
         type: boolean
         default: false
       run:
@@ -59,10 +55,14 @@ jobs:
       ${{
         needs.changes.outputs.run-luacheck == 'true' ||
         inputs.luacheck ||
-        needs.changes.outputs.run-tests == 'true' ||
-        inputs.tests ||
-        needs.changes.outputs.run-publish-dev == 'true' ||
-        needs.changes.outputs.run-publish-release == 'true'
+        (
+          (github.event_name == 'workflow_dispatch' ||
+           needs.changes.outputs.run-tests == 'true' ||
+           needs.changes.outputs.run-publish-dev == 'true' ||
+           needs.changes.outputs.run-publish-release == 'true')
+          &&
+          (inputs.test-linux || inputs.test-macos || inputs.test-windows)
+        )
       }}
     runs-on: ubuntu-latest
     outputs:
@@ -93,10 +93,12 @@ jobs:
     needs: changes
     if: >-
       ${{
-        needs.changes.outputs.run-tests == 'true' ||
-        inputs.tests ||
-        needs.changes.outputs.run-publish-dev == 'true' ||
-        needs.changes.outputs.run-publish-release == 'true'
+        (github.event_name == 'workflow_dispatch' ||
+         needs.changes.outputs.run-tests == 'true' ||
+         needs.changes.outputs.run-publish-dev == 'true' ||
+         needs.changes.outputs.run-publish-release == 'true')
+        &&
+        (inputs.test-linux || inputs.test-macos || inputs.test-windows)
       }}
     runs-on: ubuntu-latest
     outputs:
@@ -106,9 +108,9 @@ jobs:
         id: os-matrix
         run: |
           OS_LIST=""
-          [ "${{ inputs.linux   }}" = "true" ] && OS_LIST="$OS_LIST, \"ubuntu-latest\""
-          [ "${{ inputs.macos   }}" = "true" ] && OS_LIST="$OS_LIST, \"macos-latest\""
-          [ "${{ inputs.windows }}" = "true" ] && OS_LIST="$OS_LIST, \"windows-latest\""
+          [ "${{ inputs.test-linux   }}" = "true" ] && OS_LIST="$OS_LIST, \"ubuntu-latest\""
+          [ "${{ inputs.test-macos   }}" = "true" ] && OS_LIST="$OS_LIST, \"macos-latest\""
+          [ "${{ inputs.test-windows }}" = "true" ] && OS_LIST="$OS_LIST, \"windows-latest\""
           OS_LIST="[${OS_LIST#, }]"
           [ "$OS_LIST" = "[]" ] && OS_LIST='["ubuntu-latest"]'
           echo "os=$OS_LIST" >> "$GITHUB_OUTPUT"
@@ -334,10 +336,12 @@ jobs:
     needs: [changes, matrix, metadata]
     if: >-
       ${{
-        needs.changes.outputs.run-tests == 'true' ||
-        inputs.tests ||
-        needs.changes.outputs.run-publish-dev == 'true' ||
-        needs.changes.outputs.run-publish-release == 'true'
+        (github.event_name == 'workflow_dispatch' ||
+         needs.changes.outputs.run-tests == 'true' ||
+         needs.changes.outputs.run-publish-dev == 'true' ||
+         needs.changes.outputs.run-publish-release == 'true')
+        &&
+        (inputs.test-linux || inputs.test-macos || inputs.test-windows)
       }}
     name: Run Tests (${{ matrix.os }}, ${{ matrix.lua-version }})
     runs-on: ${{ matrix.os }}
