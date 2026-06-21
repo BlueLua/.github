@@ -122,6 +122,7 @@ jobs:
       run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
       run-prettier: ${{ steps.filter.outputs.prettier || 'false' }}
       run-shfmt: ${{ steps.filter.outputs.shfmt || 'false' }}
+      run-toml: ${{ steps.filter.outputs.toml || 'false' }}
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
       run-lua-language-server: ${{ steps.filter.outputs.lua_language_server || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
@@ -164,6 +165,8 @@ jobs:
               - '**/*.bash'
               - '**/*.sh'
               - '**/*.zsh'
+            toml:
+              - '**/*.toml'
             tests:
               - '.busted'
               - '*.rockspec'
@@ -197,7 +200,8 @@ jobs:
       ${{
         needs.changes.outputs.run-stylua == 'true' ||
         needs.changes.outputs.run-prettier == 'true' ||
-        needs.changes.outputs.run-shfmt == 'true'
+        needs.changes.outputs.run-shfmt == 'true' ||
+        needs.changes.outputs.run-toml == 'true'
       }}
     name: Auto-Format Code
     runs-on: ubuntu-latest
@@ -247,6 +251,16 @@ jobs:
             shfmt -w -i 2 -ci $files
           else
             echo "No shell script files to format."
+          fi
+
+      - name: Run taplo Formatter
+        if: ${{ needs.changes.outputs.run-toml == 'true' }}
+        run: |
+          files=$(git ls-files "*.toml" 2>/dev/null | tr '\n' ' ')
+          if [ -n "$files" ]; then
+            taplo fmt $files
+          else
+            echo "No TOML files to format."
           fi
 
       - name: Commit and Push Formatted Files
