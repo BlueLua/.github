@@ -71,8 +71,8 @@ jobs:
     secrets: inherit
     # prettier-ignore
     with:
-      linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.linux || __LINUX__ }}
-      macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.macos || __MACOS__ }}
+      linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.linux   || __LINUX__ }}
+      macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.macos   || __MACOS__ }}
       windows: ${{ github.event_name == 'workflow_dispatch' && inputs.windows || __WINDOWS__ }}
 
       tests:               ${{ inputs.tests               || false }}
