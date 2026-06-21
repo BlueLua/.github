@@ -221,10 +221,11 @@ jobs:
 
       - name: Clone LuaCATS dependencies
         run: |
-          mkdir -p types
-          git clone --depth 1 https://github.com/LuaCATS/busted.git        types/busted
-          git clone --depth 1 https://github.com/LuaCATS/luassert.git      types/luassert
-          git clone --depth 1 https://github.com/LuaCATS/luafilesystem.git types/luafilesystem
+          mkdir -p ~/.local/share/lua/types
+          cd ~/.local/share/lua/types
+          git clone --depth 1 https://github.com/LuaCATS/busted.git
+          git clone --depth 1 https://github.com/LuaCATS/luassert.git
+          git clone --depth 1 https://github.com/LuaCATS/luafilesystem.git
 
       - name: Run Lua Language Server check
         uses: mrcjkb/lua-typecheck-action@v1
