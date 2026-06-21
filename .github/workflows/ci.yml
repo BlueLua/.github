@@ -255,7 +255,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if ! git diff-index --quiet HEAD; then
-            git commit -m "style: auto-format files"
+            git commit -m "style: auto-format"
             git push
           fi
 
