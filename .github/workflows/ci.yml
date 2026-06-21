@@ -150,6 +150,8 @@ jobs:
               - '.github/config.json'
             stylua:
               - '**/*.lua'
+              - '**/*.luau'
+              - '**/*.rockspec'
               - '.stylua.toml'
             luacheck:
               - 'src/**/*.lua'
@@ -224,7 +226,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
-          args: .
+          args: --glob "**/*.lua" --glob "**/*.luau" --glob "**/*.rockspec" .
 
       - name: Run Prettier Formatter
         if: ${{ needs.changes.outputs.run-prettier == 'true' }}
