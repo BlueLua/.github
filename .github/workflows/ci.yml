@@ -227,8 +227,19 @@ jobs:
           git clone --depth 1 https://github.com/LuaCATS/luassert.git
           git clone --depth 1 https://github.com/LuaCATS/luafilesystem.git
 
+      - name: Install lua-language-server
+        run: |
+          mkdir -p ~/.local/share/lua-language-server
+          gh release download -R LuaLS/lua-language-server -p "*linux-x64.tar.gz" --dir ~/.local/share/lua-language-server --clobber
+          cd ~/.local/share/lua-language-server
+          tar -xzf *.tar.gz
+          rm *.tar.gz
+          echo "$HOME/.local/share/lua-language-server/bin" >> $GITHUB_PATH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Lua Language Server check
-        uses: mrcjkb/lua-typecheck-action@v1
+        run: lua-language-server --check .
 
   markdownlint:
     needs: changes
