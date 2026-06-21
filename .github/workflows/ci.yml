@@ -35,6 +35,10 @@ on:
         description: "Run Prettier check"
         type: boolean
         default: false
+      shfmt:
+        description: "Run shfmt check"
+        type: boolean
+        default: false
       tests:
         description: "Run Busted unit tests"
         type: boolean
@@ -129,6 +133,7 @@ jobs:
       run-luacheck: ${{ steps.filter.outputs.luacheck || 'false' }}
       run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
       run-prettier: ${{ steps.filter.outputs.prettier || 'false' }}
+      run-shfmt: ${{ steps.filter.outputs.shfmt || 'false' }}
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
       run-lua-language-server: ${{ steps.filter.outputs.lua_language_server || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
@@ -164,6 +169,10 @@ jobs:
               - '**/*.yml'
               - '**/*.yaml'
               - '.prettierrc*'
+            shfmt:
+              - '**/*.bash'
+              - '**/*.sh'
+              - '**/*.zsh'
             tests:
               - '.busted'
               - '*.rockspec'
@@ -280,6 +289,34 @@ jobs:
             npx prettier --check $files
           else
             echo "No JSON, JSONC, or YAML files to check."
+          fi
+
+  shfmt:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-shfmt == 'true' || inputs.shfmt }}
+    name: shfmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install shfmt
+        run: |
+          mkdir -p ~/.local/bin
+          gh release download -R mvdan/sh -p "*linux_amd64" --dir ~/.local/bin --clobber
+          mv ~/.local/bin/*linux_amd64 ~/.local/bin/shfmt
+          chmod +x ~/.local/bin/shfmt
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run shfmt check
+        run: |
+          files=$(git ls-files "*.sh" "*.bash" "*.zsh" 2>/dev/null | tr '\n' ' ')
+          if [ -n "$files" ]; then
+            shfmt -d -i 2 -ci $files
+          else
+            echo "No shell script files to check."
           fi
 
   tests:
