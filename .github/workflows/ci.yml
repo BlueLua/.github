@@ -144,6 +144,7 @@ jobs:
           (steps.filter.outputs.publish_dev == 'true' && github.ref_name == 'main')
         }}
       run-publish-release: ${{ inputs.publish-release || startsWith(github.ref, 'refs/tags/') }}
+      run-sync: ${{ steps.filter.outputs.config || 'false' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -154,6 +155,8 @@ jobs:
         id: filter
         with:
           filters: |
+            config:
+              - '.github/config.json'
             stylua:
               - '**/*.lua'
               - '.stylua.toml'
@@ -460,3 +463,20 @@ jobs:
 
           # Upload to LuaRocks
           luarocks upload "$ROCKSPEC_FILENAME" --api-key="${LUAROCKS_API_KEY}" --force
+
+  sync:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-sync == 'true' }}
+    name: Sync CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-sync files
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            echo "Running central repository sync..."
+            gh workflow run sync.yml --repo BlueLua/.github
+          else
+            echo "GH_PAT secret not available in this repository. Please configure it to enable auto-sync."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
