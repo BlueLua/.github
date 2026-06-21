@@ -8,6 +8,18 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      linux:
+        description: "Linux"
+        type: boolean
+        default: __LINUX__
+      macos:
+        description: "macOS"
+        type: boolean
+        default: __MACOS__
+      windows:
+        description: "Windows"
+        type: boolean
+        default: __WINDOWS__
       stylua:
         description: "StyLua"
         type: boolean
@@ -59,9 +71,9 @@ jobs:
     secrets: inherit
     # prettier-ignore
     with:
-      linux:   __LINUX__
-      macos:   __MACOS__
-      windows: __WINDOWS__
+      linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.linux || __LINUX__ }}
+      macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.macos || __MACOS__ }}
+      windows: ${{ github.event_name == 'workflow_dispatch' && inputs.windows || __WINDOWS__ }}
 
       tests:               ${{ inputs.tests               || false }}
       stylua:              ${{ inputs.stylua              || false }}
