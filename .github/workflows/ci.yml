@@ -15,10 +15,6 @@ on:
         description: "Run tests on Windows"
         type: boolean
         default: false
-      stylua:
-        description: "Run StyLua formatter linting"
-        type: boolean
-        default: false
       luacheck:
         description: "Run Luacheck static analysis"
         type: boolean
@@ -29,14 +25,6 @@ on:
         default: false
       markdownlint:
         description: "Run markdownlint-cli2 on Markdown"
-        type: boolean
-        default: false
-      prettier:
-        description: "Run Prettier check"
-        type: boolean
-        default: false
-      shfmt:
-        description: "Run shfmt check"
         type: boolean
         default: false
       tests:
@@ -203,21 +191,73 @@ jobs:
               - '**/*.lua'
               - '.luarc.json'
 
-  stylua:
+  format:
     needs: changes
-    if: ${{ needs.changes.outputs.run-stylua == 'true' || inputs.stylua }}
-    name: StyLua
+    if: >-
+      ${{
+        needs.changes.outputs.run-stylua == 'true' ||
+        needs.changes.outputs.run-prettier == 'true' ||
+        needs.changes.outputs.run-shfmt == 'true'
+      }}
+    name: Auto-Format Code
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Run StyLua
+      - name: Run StyLua Formatter
+        if: ${{ needs.changes.outputs.run-stylua == 'true' }}
         uses: JohnnyMorganz/stylua-action@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
-          args: --check .
+          args: .
+
+      - name: Run Prettier Formatter
+        if: ${{ needs.changes.outputs.run-prettier == 'true' }}
+        run: |
+          files=$(git ls-files "*.json" "*.jsonc" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
+          if [ -n "$files" ]; then
+            npx prettier --write $files
+          else
+            echo "No JSON, JSONC, or YAML files to format."
+          fi
+
+      - name: Install shfmt
+        if: ${{ needs.changes.outputs.run-shfmt == 'true' }}
+        run: |
+          mkdir -p ~/.local/bin
+          gh release download -R mvdan/sh -p "*linux_amd64" --dir ~/.local/bin --clobber
+          mv ~/.local/bin/*linux_amd64 ~/.local/bin/shfmt
+          chmod +x ~/.local/bin/shfmt
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run shfmt Formatter
+        if: ${{ needs.changes.outputs.run-shfmt == 'true' }}
+        run: |
+          files=$(git ls-files "*.sh" "*.bash" "*.zsh" 2>/dev/null | tr '\n' ' ')
+          if [ -n "$files" ]; then
+            shfmt -w -i 2 -ci $files
+          else
+            echo "No shell script files to format."
+          fi
+
+      - name: Commit and Push Formatted Files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "style: auto-format files"
+            git push
+          fi
 
   luacheck:
     needs: [changes, metadata]
@@ -275,52 +315,6 @@ jobs:
 
       - name: Run markdownlint-cli2
         run: npx markdownlint-cli2 "**/*.md" "#CHANGELOG.md"
-
-  prettier:
-    needs: changes
-    if: ${{ needs.changes.outputs.run-prettier == 'true' || inputs.prettier }}
-    name: Prettier
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Run Prettier check
-        run: |
-          files=$(git ls-files "*.json" "*.jsonc" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
-          if [ -n "$files" ]; then
-            npx prettier --check $files
-          else
-            echo "No JSON, JSONC, or YAML files to check."
-          fi
-
-  shfmt:
-    needs: changes
-    if: ${{ needs.changes.outputs.run-shfmt == 'true' || inputs.shfmt }}
-    name: shfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Install shfmt
-        run: |
-          mkdir -p ~/.local/bin
-          gh release download -R mvdan/sh -p "*linux_amd64" --dir ~/.local/bin --clobber
-          mv ~/.local/bin/*linux_amd64 ~/.local/bin/shfmt
-          chmod +x ~/.local/bin/shfmt
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run shfmt check
-        run: |
-          files=$(git ls-files "*.sh" "*.bash" "*.zsh" 2>/dev/null | tr '\n' ' ')
-          if [ -n "$files" ]; then
-            shfmt -d -i 2 -ci $files
-          else
-            echo "No shell script files to check."
-          fi
 
   tests:
     needs: [changes, matrix, metadata]

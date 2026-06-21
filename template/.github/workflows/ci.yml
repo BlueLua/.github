@@ -20,10 +20,7 @@ on:
         description: "Windows"
         type: boolean
         default: __WINDOWS__
-      stylua:
-        description: "StyLua"
-        type: boolean
-        default: false
+
       luacheck:
         description: "Luacheck"
         type: boolean
@@ -36,14 +33,7 @@ on:
         description: "Markdownlint"
         type: boolean
         default: false
-      prettier:
-        description: "Prettier"
-        type: boolean
-        default: false
-      shfmt:
-        description: "shfmt"
-        type: boolean
-        default: false
+
       tests:
         description: "Tests"
         type: boolean
@@ -76,12 +66,9 @@ jobs:
       windows: ${{ github.event_name == 'workflow_dispatch' && inputs.windows || __WINDOWS__ }}
 
       tests:               ${{ inputs.tests               || false }}
-      stylua:              ${{ inputs.stylua              || false }}
       luacheck:            ${{ inputs.luacheck            || false }}
       lua-language-server: ${{ inputs.lua-language-server || false }}
       markdownlint:        ${{ inputs.markdownlint        || false }}
-      prettier:            ${{ inputs.prettier            || false }}
-      shfmt:               ${{ inputs.shfmt               || false }}
 
       release-please:  ${{ inputs.release-please  || false }}
       publish-dev:     ${{ inputs.publish-dev     || false }}
