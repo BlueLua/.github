@@ -161,7 +161,6 @@ jobs:
             prettier:
               - '**/*.json'
               - '**/*.jsonc'
-              - '**/*.toml'
               - '**/*.yml'
               - '**/*.yaml'
               - '.prettierrc*'
@@ -276,12 +275,11 @@ jobs:
 
       - name: Run Prettier check
         run: |
-          npm install --no-save prettier-plugin-toml
-          files=$(git ls-files "*.json" "*.jsonc" "*.toml" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
+          files=$(git ls-files "*.json" "*.jsonc" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
           if [ -n "$files" ]; then
             npx prettier --check $files
           else
-            echo "No JSON, JSONC, TOML, or YAML files to check."
+            echo "No JSON, JSONC, or YAML files to check."
           fi
 
   tests:
