@@ -40,6 +40,10 @@ on:
         description: "Prettier"
         type: boolean
         default: false
+      shfmt:
+        description: "shfmt"
+        type: boolean
+        default: false
       tests:
         description: "Tests"
         type: boolean
@@ -77,6 +81,7 @@ jobs:
       lua-language-server: ${{ inputs.lua-language-server || false }}
       markdownlint:        ${{ inputs.markdownlint        || false }}
       prettier:            ${{ inputs.prettier            || false }}
+      shfmt:               ${{ inputs.shfmt               || false }}
 
       release-please:  ${{ inputs.release-please  || false }}
       publish-dev:     ${{ inputs.publish-dev     || false }}
