@@ -62,6 +62,44 @@ has_os() {
 
 # Parse config.json and populate OS runner inputs in ci.yml
 ci_workflow() {
+  # Remove inputs and parameter entries for disabled OSes
+  if [ "$(has_os "linux" "true")" = "false" ]; then
+    sed -i '/^[[:space:]]*test-linux:$/,/^[[:space:]]*default: __LINUX__$/d' .github/workflows/ci.yml
+    sed -i '/test-linux:.*inputs\.test-linux/d' .github/workflows/ci.yml
+  fi
+  if [ "$(has_os "macos" "false")" = "false" ]; then
+    sed -i '/^[[:space:]]*test-macos:$/,/^[[:space:]]*default: __MACOS__$/d' .github/workflows/ci.yml
+    sed -i '/test-macos:.*inputs\.test-macos/d' .github/workflows/ci.yml
+  fi
+  if [ "$(has_os "windows" "false")" = "false" ]; then
+    sed -i '/^[[:space:]]*test-windows:$/,/^[[:space:]]*default: __WINDOWS__$/d' .github/workflows/ci.yml
+    sed -i '/test-windows:.*inputs\.test-windows/d' .github/workflows/ci.yml
+  fi
+
+  # Count enabled OSes
+  local count=0
+  local enabled_os=""
+  if [ "$(has_os "linux" "true")" = "true" ]; then
+    count=$((count + 1))
+    enabled_os="linux"
+  fi
+  if [ "$(has_os "macos" "false")" = "true" ]; then
+    count=$((count + 1))
+    enabled_os="macos"
+  fi
+  if [ "$(has_os "windows" "false")" = "true" ]; then
+    count=$((count + 1))
+    enabled_os="windows"
+  fi
+
+  # If exactly 1 OS is enabled, rename the input definition and reference to 'test'
+  if [ "$count" -eq 1 ]; then
+    sed -i "s/^[[:space:]]*test-${enabled_os}:$/      test:/g" .github/workflows/ci.yml
+    sed -i "s/inputs\.test-${enabled_os}/inputs\.test/g" .github/workflows/ci.yml
+    sed -i 's/description: "Test on .*"/description: "Test"/g' .github/workflows/ci.yml
+  fi
+
+  # Replace remaining placeholders
   sed -i -e "s/__LINUX__/$(has_os "linux" "true")/g" \
     -e "s/__MACOS__/$(has_os "macos" "false")/g" \
     -e "s/__WINDOWS__/$(has_os "windows" "false")/g" \
