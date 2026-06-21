@@ -203,6 +203,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -236,8 +238,6 @@ jobs:
           mv ~/.local/bin/*linux_amd64 ~/.local/bin/shfmt
           chmod +x ~/.local/bin/shfmt
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run shfmt Formatter
         if: ${{ needs.changes.outputs.run-shfmt == 'true' }}
