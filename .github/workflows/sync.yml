@@ -1,0 +1,81 @@
+name: Sync Files
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'template/**'
+      - '.github/workflows/sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Sync template files to downstream repositories
+        run: |
+          # 1. Configure Git author
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 2. Discover target repositories (active repos, excluding .github and site repos)
+          # TEMPORARY: Only sync and test on the 'temp' repository
+          REPOS="temp"
+          # REPOS=$(gh repo list BlueLua \
+          #   --limit 1000 \
+          #   --json name,isArchived \
+          #   -q '.[] | select(.isArchived == false and .name != ".github" and .name != "bluelua.github.io") | .name')
+
+          # 3. Synchronize template/ files to each repo
+          for r in $REPOS; do
+            echo "=== Syncing repository: $r ==="
+            CLONE_DIR="/tmp/$r"
+            rm -rf "$CLONE_DIR"
+
+            # Clone using the PAT token
+            git clone "https://x-access-token:${{ secrets.GH_PAT }}@github.com/BlueLua/$r.git" "$CLONE_DIR"
+
+            # Copy all files from template/ recursively (including dotfiles like .editorconfig)
+            cp -a template/. "$CLONE_DIR/"
+
+            # Stage, commit, and push if changes are detected
+            cd "$CLONE_DIR"
+
+            # Parse config.json and replace placeholders in generated ci.yml
+            LINUX_VAL="true"
+            MACOS_VAL="false"
+            WINDOWS_VAL="false"
+            if [ -f ".github/config.json" ]; then
+              LINUX_VAL=$(jq -r 'if .os then ([.os[] | select(. == "linux")] | length > 0) else true end' .github/config.json 2>/dev/null || echo "true")
+              MACOS_VAL=$(jq -r 'if .os then ([.os[] | select(. == "macos")] | length > 0) else false end' .github/config.json 2>/dev/null || echo "false")
+              WINDOWS_VAL=$(jq -r 'if .os then ([.os[] | select(. == "windows")] | length > 0) else false end' .github/config.json 2>/dev/null || echo "false")
+            fi
+
+            if [ -f ".github/workflows/ci.yml" ]; then
+              sed -i -e "s/__LINUX__/$LINUX_VAL/g" \
+                     -e "s/__MACOS__/$MACOS_VAL/g" \
+                     -e "s/__WINDOWS__/$WINDOWS_VAL/g" \
+                     .github/workflows/ci.yml
+            fi
+
+            git add -A
+            if ! git diff-index --quiet HEAD; then
+              git commit -m "ci: sync files from BlueLua/.github template"
+              git push origin main
+            else
+              echo "No changes found for $r. Skipping push."
+            fi
+
+            # Clean up local clone
+            cd "$GITHUB_WORKSPACE"
+            rm -rf "$CLONE_DIR"
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
