@@ -20,7 +20,6 @@ on:
         description: "Windows"
         type: boolean
         default: __WINDOWS__
-
       luacheck:
         description: "Luacheck"
         type: boolean
@@ -33,7 +32,6 @@ on:
         description: "Markdownlint"
         type: boolean
         default: false
-
       tests:
         description: "Tests"
         type: boolean
