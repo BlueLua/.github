@@ -37,6 +37,8 @@ release_please() {
         mv tmp.json .github/release-please-config.json
     fi
   fi
+
+  npx prettier --write .github/release-please-config.json
 }
 
 # Check if an operating system is enabled in config.json
