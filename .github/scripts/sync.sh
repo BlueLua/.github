@@ -25,6 +25,18 @@ release_please() {
   latest_version="${latest_version:-0.0.0}"
 
   sed -i "s/__VERSION__/$latest_version/g" .github/release-please-manifest.json
+
+  # Inject version-files list from config.json if defined
+  if [ -f ".github/config.json" ]; then
+    local version_files_json
+    version_files_json=$(jq -c '.["version-files"] // empty' .github/config.json 2> /dev/null || echo "")
+    if [ -n "$version_files_json" ] && [ "$version_files_json" != "[]" ]; then
+      jq --argjson files "$version_files_json" \
+        '.packages["."]["extra-files"] = $files' \
+        .github/release-please-config.json > tmp.json &&
+        mv tmp.json .github/release-please-config.json
+    fi
+  fi
 }
 
 # Check if an operating system is enabled in config.json
