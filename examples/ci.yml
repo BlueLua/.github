@@ -36,6 +36,10 @@ on:
         description: "Markdownlint"
         type: boolean
         default: false
+      prettier:
+        description: "Prettier"
+        type: boolean
+        default: false
       tests:
         description: "Tests"
         type: boolean
@@ -72,6 +76,7 @@ jobs:
       luacheck:            ${{ inputs.luacheck            || false }}
       lua-language-server: ${{ inputs.lua-language-server || false }}
       markdownlint:        ${{ inputs.markdownlint        || false }}
+      prettier:            ${{ inputs.prettier            || false }}
 
       release-please:  ${{ inputs.release-please  || false }}
       publish-dev:     ${{ inputs.publish-dev     || false }}
