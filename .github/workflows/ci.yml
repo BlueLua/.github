@@ -31,6 +31,10 @@ on:
         description: "Run markdownlint-cli2 on Markdown"
         type: boolean
         default: false
+      prettier:
+        description: "Run Prettier check"
+        type: boolean
+        default: false
       tests:
         description: "Run Busted unit tests"
         type: boolean
@@ -124,6 +128,7 @@ jobs:
       run-stylua: ${{ steps.filter.outputs.stylua || 'false' }}
       run-luacheck: ${{ steps.filter.outputs.luacheck || 'false' }}
       run-markdownlint: ${{ steps.filter.outputs.markdownlint || 'false' }}
+      run-prettier: ${{ steps.filter.outputs.prettier || 'false' }}
       run-tests: ${{ steps.filter.outputs.tests || 'false' }}
       run-lua-language-server: ${{ steps.filter.outputs.lua_language_server || 'false' }}
       run-release-please: ${{ steps.filter.outputs.release_please || 'false' }}
@@ -153,6 +158,13 @@ jobs:
             markdownlint:
               - '**/!(CHANGELOG).md'
               - '.markdownlint*'
+            prettier:
+              - '**/*.json'
+              - '**/*.jsonc'
+              - '**/*.toml'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '.prettierrc*'
             tests:
               - '.busted'
               - '*.rockspec'
@@ -252,6 +264,25 @@ jobs:
 
       - name: Run markdownlint-cli2
         run: npx markdownlint-cli2 "**/*.md" "#CHANGELOG.md"
+
+  prettier:
+    needs: changes
+    if: ${{ needs.changes.outputs.run-prettier == 'true' || inputs.prettier }}
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Run Prettier check
+        run: |
+          npm install --no-save prettier-plugin-toml
+          files=$(git ls-files "*.json" "*.jsonc" "*.toml" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
+          if [ -n "$files" ]; then
+            npx prettier --check $files
+          else
+            echo "No JSON, JSONC, TOML, or YAML files to check."
+          fi
 
   tests:
     needs: [changes, matrix, metadata]
