@@ -81,11 +81,11 @@ jobs:
           PACKAGE_NAME=$(jq -r '.package' .github/config.json)
           echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
+          HAS_TESTS="false"
           if [ -d "tests" ] || [ -d "test" ]; then
-            echo "has-tests=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-tests=false" >> "$GITHUB_OUTPUT"
+            HAS_TESTS="true"
           fi
+          echo "has-tests=$HAS_TESTS" >> "$GITHUB_OUTPUT"
 
   # NOTE: The `if` condition below is intentionally duplicated from the `tests` job.
   # GitHub Actions has no way to share a condition, so both must be kept in sync.
