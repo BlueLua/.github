@@ -11,15 +11,15 @@ on:
       test-linux:
         description: "Test on Linux"
         type: boolean
-        default: __LINUX__
+        default: false
       test-macos:
         description: "Test on macOS"
         type: boolean
-        default: __MACOS__
+        default: false
       test-windows:
         description: "Test on Windows"
         type: boolean
-        default: __WINDOWS__
+        default: false
       luacheck:
         description: "Luacheck"
         type: boolean
