@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'template/**'
-      - '.github/workflows/sync.yml'
-      - '.github/scripts/sync.sh'
+      - "template/**"
+      - ".github/workflows/sync.yml"
+      - ".github/scripts/sync.sh"
+  schedule:
+    # Run daily at midnight UTC to keep downstream repositories in sync
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
