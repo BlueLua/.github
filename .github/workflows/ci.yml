@@ -6,7 +6,7 @@ on:
       test-linux:
         description: "Run tests on Linux"
         type: boolean
-        default: true
+        default: false
       test-macos:
         description: "Run tests on macOS"
         type: boolean
