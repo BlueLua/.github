@@ -80,7 +80,7 @@ jobs:
           echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
           echo "setup-commands<<EOF" >> "$GITHUB_OUTPUT"
-          jq -r '.["setup-commands"] // empty' .github/config.json >> "$GITHUB_OUTPUT"
+          jq -r '.["setup-commands"] // [] | join("\n")' .github/config.json >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
           HAS_TESTS="false"
