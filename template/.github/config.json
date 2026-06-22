@@ -1,5 +1,5 @@
 {
   "package": "__PACKAGE__",
-  "os": ["linux"],
+  "os": ["linux", "macos", "windows"],
   "version-files": []
 }
