@@ -16,6 +16,6 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    ["__MODULE__"] = "__SRC__/__MODULE__/init.lua",
+    __MODULES__,
   },
 }
