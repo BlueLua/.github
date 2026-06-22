@@ -79,15 +79,15 @@ has_os() {
 ci_workflow() {
   # Remove inputs and parameter entries for disabled OSes
   if [ "$(has_os "linux" "true")" = "false" ]; then
-    sed -i '/^[[:space:]]*test-linux:$/,/^[[:space:]]*default: __LINUX__$/d' .github/workflows/ci.yml
+    sed -i '/^[[:space:]]*test-linux:$/,/^[[:space:]]*default: false$/d' .github/workflows/ci.yml
     sed -i '/test-linux:.*inputs\.test-linux/d' .github/workflows/ci.yml
   fi
-  if [ "$(has_os "macos" "false")" = "false" ]; then
-    sed -i '/^[[:space:]]*test-macos:$/,/^[[:space:]]*default: __MACOS__$/d' .github/workflows/ci.yml
+  if [ "$(has_os "macos" "true")" = "false" ]; then
+    sed -i '/^[[:space:]]*test-macos:$/,/^[[:space:]]*default: false$/d' .github/workflows/ci.yml
     sed -i '/test-macos:.*inputs\.test-macos/d' .github/workflows/ci.yml
   fi
-  if [ "$(has_os "windows" "false")" = "false" ]; then
-    sed -i '/^[[:space:]]*test-windows:$/,/^[[:space:]]*default: __WINDOWS__$/d' .github/workflows/ci.yml
+  if [ "$(has_os "windows" "true")" = "false" ]; then
+    sed -i '/^[[:space:]]*test-windows:$/,/^[[:space:]]*default: false$/d' .github/workflows/ci.yml
     sed -i '/test-windows:.*inputs\.test-windows/d' .github/workflows/ci.yml
   fi
 
@@ -98,11 +98,11 @@ ci_workflow() {
     count=$((count + 1))
     enabled_os="linux"
   fi
-  if [ "$(has_os "macos" "false")" = "true" ]; then
+  if [ "$(has_os "macos" "true")" = "true" ]; then
     count=$((count + 1))
     enabled_os="macos"
   fi
-  if [ "$(has_os "windows" "false")" = "true" ]; then
+  if [ "$(has_os "windows" "true")" = "true" ]; then
     count=$((count + 1))
     enabled_os="windows"
   fi
@@ -114,11 +114,31 @@ ci_workflow() {
     sed -i 's/description: "Test on .*"/description: "Test"/g' .github/workflows/ci.yml
   fi
 
-  # Replace remaining placeholders
+  # Replace with: placeholders with actual enabled values
   sed -i -e "s/__LINUX__/$(has_os "linux" "true")/g" \
-    -e "s/__MACOS__/$(has_os "macos" "false")/g" \
-    -e "s/__WINDOWS__/$(has_os "windows" "false")/g" \
+    -e "s/__MACOS__/$(has_os "macos" "true")/g" \
+    -e "s/__WINDOWS__/$(has_os "windows" "true")/g" \
     .github/workflows/ci.yml
+}
+
+# Resolve and write dynamic links in CONTRIBUTING.md
+contributing_md() {
+  local repo_name="$1"
+  if [ -f "CONTRIBUTING.md" ]; then
+    local package_name="${repo_name}"
+    if [ -f ".github/config.json" ]; then
+      local config_package
+      config_package=$(jq -r '.package // empty' .github/config.json 2> /dev/null || echo "")
+      if [ -n "$config_package" ]; then
+        package_name="$config_package"
+      fi
+    fi
+    sed -i -e "s/__REPO__/${repo_name}/g" \
+      -e "s/__PACKAGE__/${package_name}/g" \
+      CONTRIBUTING.md
+
+    npx prettier --write CONTRIBUTING.md
+  fi
 }
 
 # Commit and push changes if any diffs exist
@@ -163,6 +183,7 @@ main() {
     bash "$script_dir/rockspec.sh" "$r"
     release_please
     ci_workflow
+    contributing_md "$r"
 
     # Commit & push changes
     commit_and_push "$r"
