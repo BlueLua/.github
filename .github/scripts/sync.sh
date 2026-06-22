@@ -11,7 +11,22 @@ configure_git() {
 # Copy central template files to target repository clone
 sync_repository_files() {
   local clone_dir="$1"
+  local repo_name="$2"
+
+  local has_config="false"
+  if [ -f "$clone_dir/.github/config.json" ]; then
+    has_config="true"
+    mv "$clone_dir/.github/config.json" "$clone_dir/.github/config.json.bak"
+  fi
+
   cp -a template/. "$clone_dir/"
+
+  if [ "$has_config" = "true" ]; then
+    mv "$clone_dir/.github/config.json.bak" "$clone_dir/.github/config.json"
+  else
+    # If the target repo didn't have config.json, populate the template package name with repo_name
+    sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
+  fi
 }
 
 # Resolve and write release-please version manifest
