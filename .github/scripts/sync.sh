@@ -106,6 +106,40 @@ ci_workflow() {
     .github/workflows/ci.yml
 }
 
+# Resolve and write repository-specific rockspec from template
+process_rockspec() {
+  local repo_name="$1"
+  local src_dir="lua"
+  [ -d "src" ] && src_dir="src"
+
+  local package_name="${repo_name}"
+  if [ -f ".github/config.json" ]; then
+    local config_package
+    config_package=$(jq -r '.package // empty' .github/config.json 2> /dev/null || echo "")
+    if [ -n "$config_package" ]; then
+      package_name="$config_package"
+    fi
+  fi
+
+  # Check if the target repo already has an existing custom rockspec file
+  local existing_rockspec
+  existing_rockspec=$(find . -maxdepth 1 -name "*.rockspec" ! -name ".rockspec" -print -quit)
+
+  if [ -n "$existing_rockspec" ]; then
+    echo "Found existing custom rockspec: $existing_rockspec. Skipping template generation."
+    rm -f .rockspec # clean up the copied template file
+  else
+    if [ -f ".rockspec" ]; then
+      sed -i -e "s/__PACKAGE__/${package_name}/g" \
+        -e "s/__REPO__/${repo_name}/g" \
+        -e "s/__MODULE__/${repo_name}/g" \
+        -e "s/__SRC__/${src_dir}/g" \
+        .rockspec
+      mv .rockspec "${package_name}-scm-1.rockspec"
+    fi
+  fi
+}
+
 # Commit and push changes if any diffs exist
 commit_and_push() {
   local repo_name="$1"
@@ -144,6 +178,7 @@ main() {
     cd "$clone_dir"
 
     # Process configurations and workflows
+    process_rockspec "$r"
     release_please
     ci_workflow
 
