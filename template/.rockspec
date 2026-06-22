@@ -16,6 +16,6 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    __MODULES__,
+    __MODULES__
   },
 }
