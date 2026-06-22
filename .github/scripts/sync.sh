@@ -134,6 +134,9 @@ commit_and_push() {
 }
 
 main() {
+  local script_dir
+  script_dir=$(cd "$(dirname "$0")" && pwd)
+
   # Discover target repositories (active repos, excluding .github and site repos)
   local repos
   repos=$(gh repo list BlueLua \
@@ -157,7 +160,7 @@ main() {
     cd "$clone_dir"
 
     # Process configurations and workflows
-    bash "$(dirname "$0")/rockspec.sh" "$r"
+    bash "$script_dir/rockspec.sh" "$r"
     release_please
     ci_workflow
 
