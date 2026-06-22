@@ -1,4 +1,5 @@
 {
+  "package": "package-name",
   "os": ["linux", "macos", "windows"],
   "version-files": []
 }
