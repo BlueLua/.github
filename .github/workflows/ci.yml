@@ -258,7 +258,7 @@ jobs:
         run: |
           files=$(git ls-files "*.toml" 2>/dev/null | tr '\n' ' ')
           if [ -n "$files" ]; then
-            taplo fmt $files
+            npx @taplo/cli fmt $files
           else
             echo "No TOML files to format."
           fi
