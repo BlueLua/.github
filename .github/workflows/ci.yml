@@ -68,6 +68,7 @@ jobs:
     outputs:
       source-dir: ${{ steps.detect.outputs.source-dir }}
       package-name: ${{ steps.detect.outputs.package-name }}
+      has-tests: ${{ steps.detect.outputs.has-tests }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -86,13 +87,20 @@ jobs:
           fi
           echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
+          if [ -d "tests" ] || [ -d "test" ]; then
+            echo "has-tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # NOTE: The `if` condition below is intentionally duplicated from the `tests` job.
   # GitHub Actions has no way to share a condition, so both must be kept in sync.
   matrix:
     name: Setup Matrix
-    needs: changes
+    needs: [changes, metadata]
     if: >-
       ${{
+        needs.metadata.outputs.has-tests == 'true' &&
         (github.event_name == 'workflow_dispatch' ||
          needs.changes.outputs.run-tests == 'true' ||
          needs.changes.outputs.run-publish-dev == 'true' ||
@@ -337,6 +345,7 @@ jobs:
     needs: [changes, matrix, metadata]
     if: >-
       ${{
+        needs.metadata.outputs.has-tests == 'true' &&
         (github.event_name == 'workflow_dispatch' ||
          needs.changes.outputs.run-tests == 'true' ||
          needs.changes.outputs.run-publish-dev == 'true' ||
