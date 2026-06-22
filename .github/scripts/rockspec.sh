@@ -68,9 +68,9 @@ if [ -d "$src_dir" ]; then
   if [ ${#c_files[@]} -gt 0 ]; then
     # If there are Lua wrapper files, we name the C module "<package>._core".
     # Otherwise, it must be the package entrypoint itself, so we name it "<package>".
-    c_module_name="${package_name}"
+    c_module_name="${repo_name}"
     if [ ${#lua_files[@]} -gt 0 ]; then
-      c_module_name="${package_name}._core"
+      c_module_name="${repo_name}._core"
     fi
 
     modules_list="${modules_list}[\"${c_module_name}\"] = {\nsources = {\n"
@@ -90,7 +90,7 @@ if [ -d "types" ]; then
     mod_name="${relpath%.d.lua}"
 
     # Add to modules_list with correct indentation
-    modules_list="${modules_list}    [\"${package_name}.types/${mod_name}\"] = \"${filepath}\",\n"
+    modules_list="${modules_list}    [\"${repo_name}.types/${mod_name}\"] = \"${filepath}\",\n"
   done < <(find "types" -name "*.d.lua" -print0 | sort -z)
 fi
 
