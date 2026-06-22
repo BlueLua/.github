@@ -27,10 +27,7 @@ on:
         description: "Run markdownlint-cli2 on Markdown"
         type: boolean
         default: false
-      run:
-        description: "Custom shell commands to run before building/testing"
-        type: string
-        default: ""
+
       release-please:
         description: "Run Release Please"
         type: boolean
@@ -69,6 +66,7 @@ jobs:
       source-dir: ${{ steps.detect.outputs.source-dir }}
       package-name: ${{ steps.detect.outputs.package-name }}
       has-tests: ${{ steps.detect.outputs.has-tests }}
+      setup-commands: ${{ steps.detect.outputs.setup-commands }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -80,6 +78,10 @@ jobs:
 
           PACKAGE_NAME=$(jq -r '.package' .github/config.json)
           echo "package-name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
+
+          echo "setup-commands<<EOF" >> "$GITHUB_OUTPUT"
+          jq -r '.["setup-commands"] // empty' .github/config.json >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
           HAS_TESTS="false"
           if [ -d "tests" ] || [ -d "test" ]; then
@@ -366,10 +368,10 @@ jobs:
         uses: luarocks/gh-actions-luarocks@master
 
       - name: Run custom setup commands
-        if: ${{ inputs.run != '' }}
+        if: ${{ needs.metadata.outputs.setup-commands != '' }}
         shell: bash
         env:
-          SETUP_COMMANDS: ${{ inputs.run }}
+          SETUP_COMMANDS: ${{ needs.metadata.outputs.setup-commands }}
         run: bash -c "$SETUP_COMMANDS"
 
       # pwsh is used here instead of bash because on Windows, bash (Git Bash) mangles
