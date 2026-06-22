@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "template/**"
+      - "tests/**"
       - ".github/workflows/sync.yml"
       - ".github/scripts/sync.sh"
   schedule:
@@ -16,8 +17,22 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    name: Test sync script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install StyLua
+        run: npm install -g @johnnymorganz/stylua-bin
+
+      - name: Run sync tests
+        run: bash tests/run_tests.sh
+
   sync:
     name: Sync Files
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
