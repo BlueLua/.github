@@ -53,16 +53,15 @@ jobs:
   ci:
     uses: BlueLua/.github/.github/workflows/ci.yml@main
     secrets: inherit
-    # prettier-ignore
     with:
-      test-linux:   ${{ github.event_name == 'workflow_dispatch' && inputs.test-linux   || __LINUX__ }}
-      test-macos:   ${{ github.event_name == 'workflow_dispatch' && inputs.test-macos   || __MACOS__ }}
+      test-linux: ${{ github.event_name == 'workflow_dispatch' && inputs.test-linux || __LINUX__ }}
+      test-macos: ${{ github.event_name == 'workflow_dispatch' && inputs.test-macos || __MACOS__ }}
       test-windows: ${{ github.event_name == 'workflow_dispatch' && inputs.test-windows || __WINDOWS__ }}
 
-      luacheck:            ${{ inputs.luacheck            || false }}
+      luacheck: ${{ inputs.luacheck || false }}
       lua-language-server: ${{ inputs.lua-language-server || false }}
-      markdownlint:        ${{ inputs.markdownlint        || false }}
+      markdownlint: ${{ inputs.markdownlint || false }}
 
-      release-please:  ${{ inputs.release-please  || false }}
-      publish-dev:     ${{ inputs.publish-dev     || false }}
+      release-please: ${{ inputs.release-please || false }}
+      publish-dev: ${{ inputs.publish-dev || false }}
       publish-release: ${{ inputs.publish-release || false }}
