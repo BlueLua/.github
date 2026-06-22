@@ -171,6 +171,7 @@ jobs:
               - '**/*.jsonc'
               - '**/*.yml'
               - '**/*.yaml'
+              - '**/!(CHANGELOG).md'
               - '.prettierrc*'
             shfmt:
               - '**/*.bash'
@@ -214,7 +215,7 @@ jobs:
         needs.changes.outputs.run-shfmt == 'true' ||
         needs.changes.outputs.run-toml == 'true'
       }}
-    name: Auto-Format Code
+    name: Auto-Format
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -237,13 +238,7 @@ jobs:
 
       - name: Run Prettier Formatter
         if: ${{ needs.changes.outputs.run-prettier == 'true' }}
-        run: |
-          files=$(git ls-files "*.json" "*.jsonc" "*.yml" "*.yaml" 2>/dev/null | tr '\n' ' ')
-          if [ -n "$files" ]; then
-            npx prettier --write $files
-          else
-            echo "No JSON, JSONC, or YAML files to format."
-          fi
+        run: npx prettier --write . "!CHANGELOG.md" --ignore-unknown
 
       - name: Install shfmt
         if: ${{ needs.changes.outputs.run-shfmt == 'true' }}
