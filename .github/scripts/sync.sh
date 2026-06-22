@@ -120,13 +120,11 @@ commit_and_push() {
 
 main() {
   # Discover target repositories (active repos, excluding .github and site repos)
-  # TEMPORARY: Only sync and test on the 'temp' repository
-  local repos="temp"
-  # local repos
-  # repos=$(gh repo list BlueLua \
-  #   --limit 1000 \
-  #   --json name,isArchived \
-  #   -q '.[] | select(.isArchived == false and .name != ".github" and .name != "bluelua.github.io") | .name')
+  local repos
+  repos=$(gh repo list BlueLua \
+    --limit 1000 \
+    --json name,isArchived \
+    -q '.[] | select(.isArchived == false and .name != ".github" and .name != "bluelua.github.io") | .name')
 
   configure_git
 
@@ -139,7 +137,7 @@ main() {
     git clone "https://x-access-token:${GH_TOKEN}@github.com/BlueLua/$r.git" "$clone_dir"
 
     # Copy template files
-    sync_repository_files "$clone_dir"
+    sync_repository_files "$clone_dir" "$r"
 
     cd "$clone_dir"
 
