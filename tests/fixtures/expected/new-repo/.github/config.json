@@ -1,0 +1,6 @@
+{
+  "package": "new-repo",
+  "os": ["linux", "macos", "windows"],
+  "version-files": [],
+  "setup-commands": ""
+}

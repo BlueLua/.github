@@ -1,0 +1,6 @@
+{
+  "package": "c-extension",
+  "os": ["linux"],
+  "version-files": ["src/c-extension/device.c"],
+  "setup-commands": ""
+}

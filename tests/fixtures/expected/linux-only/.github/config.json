@@ -1,0 +1,6 @@
+{
+  "package": "linux-only",
+  "os": ["linux"],
+  "version-files": [],
+  "setup-commands": ""
+}

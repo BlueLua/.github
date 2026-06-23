@@ -1,0 +1,6 @@
+{
+  "package": "full-os",
+  "os": ["linux", "macos", "windows"],
+  "version-files": ["src/full-os.c"],
+  "setup-commands": ""
+}
