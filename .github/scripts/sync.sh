@@ -123,6 +123,23 @@ ci_workflow() {
     .github/workflows/ci.yml
 }
 
+# Parse config.json and populate OS matrix in test.yml
+test_workflow() {
+  if [ -f .github/workflows/test.yml ]; then
+    local os_list=""
+    [ "$(has_os "linux" "true")" = "true" ] && os_list="$os_list, \"ubuntu-latest\""
+    [ "$(has_os "macos" "true")" = "true" ] && os_list="$os_list, \"macos-latest\""
+    [ "$(has_os "windows" "true")" = "true" ] && os_list="$os_list, \"windows-latest\""
+    os_list="[${os_list#, }]"
+
+    # If no OS is enabled, fallback to ubuntu-latest
+    [ "$os_list" = "[]" ] && os_list='["ubuntu-latest"]'
+
+    sed -i "s/\[\"__OS_LIST__\"\]/$os_list/g" .github/workflows/test.yml
+  fi
+}
+
+
 # Resolve and write dynamic links in CONTRIBUTING.md
 contributing_md() {
   local repo_name="$1"
@@ -170,6 +187,7 @@ sync_directory() {
   bash "$script_dir/rockspec.sh" "$repo_name"
   release_please
   ci_workflow
+  test_workflow
   contributing_md "$repo_name"
 }
 
