@@ -31,10 +31,12 @@ sync_repository_files() {
 
 # Resolve and write release-please version manifest
 release_please() {
-  # Fetch tags and resolve release version
-  git fetch --tags
-  local latest_tag
-  latest_tag=$(git describe --tags --abbrev=0 2> /dev/null || echo "")
+  # Fetch tags and resolve release version if inside a git repository
+  local latest_tag=""
+  if git rev-parse --is-inside-work-tree &>/dev/null; then
+    git fetch --tags || true
+    latest_tag=$(git describe --tags --abbrev=0 2> /dev/null || echo "")
+  fi
 
   local latest_version="${latest_tag#v}"
   latest_version="${latest_version:-0.0.0}"
@@ -153,6 +155,24 @@ commit_and_push() {
   fi
 }
 
+# Core file sync and processing logic for a repository directory
+sync_directory() {
+  local target_dir="$1"
+  local repo_name="$2"
+  local script_dir="$3"
+
+  # Copy template files
+  sync_repository_files "$target_dir" "$repo_name"
+
+  cd "$target_dir"
+
+  # Process configurations and workflows
+  bash "$script_dir/rockspec.sh" "$repo_name"
+  release_please
+  ci_workflow
+  contributing_md "$repo_name"
+}
+
 main() {
   local script_dir
   script_dir=$(cd "$(dirname "$0")" && pwd)
@@ -174,18 +194,11 @@ main() {
     # Clone using the PAT token
     git clone "https://x-access-token:${GH_TOKEN}@github.com/BlueLua/$r.git" "$clone_dir"
 
-    # Copy template files
-    sync_repository_files "$clone_dir" "$r"
-
-    cd "$clone_dir"
-
-    # Process configurations and workflows
-    bash "$script_dir/rockspec.sh" "$r"
-    release_please
-    ci_workflow
-    contributing_md "$r"
+    # Sync and process the repository files
+    sync_directory "$clone_dir" "$r" "$script_dir"
 
     # Commit & push changes
+    cd "$clone_dir"
     commit_and_push "$r"
 
     # Clean up local clone
@@ -194,4 +207,6 @@ main() {
   done
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
