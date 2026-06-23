@@ -110,4 +110,6 @@ mv .rockspec "${package_name}-scm-1.rockspec"
 # Format the generated rockspec file using StyLua if available
 if command -v stylua &> /dev/null; then
   stylua "${package_name}-scm-1.rockspec"
+elif command -v npx &> /dev/null; then
+  npx -y @johnnymorganz/stylua-bin "${package_name}-scm-1.rockspec"
 fi
