@@ -1,4 +1,4 @@
-package = "pure-lua"
+package = "pure-lua-package"
 version = "scm-1"
 
 source = {
