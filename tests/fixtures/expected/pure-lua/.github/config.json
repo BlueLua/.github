@@ -1,5 +1,5 @@
 {
-  "package": "pure-lua",
+  "package": "pure-lua-package",
   "os": ["linux", "macos", "windows"],
   "version-files": [],
   "setup-commands": ""
