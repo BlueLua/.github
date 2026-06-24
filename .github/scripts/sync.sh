@@ -20,7 +20,6 @@ sync_repository_files() {
   fi
 
   cp -a template/. "$clone_dir/"
-  rm -f "$clone_dir/.github/workflows/ci.yml"
 
   if [ "$has_config" = "true" ]; then
     mv "$clone_dir/.github/config.json.bak" "$clone_dir/.github/config.json"
