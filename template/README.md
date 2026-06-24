@@ -1,4 +1,4 @@
-# __PACKAGE__
+# __REPO__
 
 [![Test](https://img.shields.io/github/actions/workflow/status/BlueLua/__REPO__/test.yml?branch=main&label=test&style=flat-square)](https://github.com/BlueLua/__REPO__/actions/workflows/test.yml)
 [![LuaRocks](https://img.shields.io/luarocks/v/BlueLua/__PACKAGE__?color=blue&style=flat-square)](https://luarocks.org/modules/BlueLua/__PACKAGE__)
