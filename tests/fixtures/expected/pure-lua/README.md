@@ -1,4 +1,4 @@
-# pure-lua-package
+# pure-lua
 
 [![Test](https://img.shields.io/github/actions/workflow/status/BlueLua/pure-lua/test.yml?branch=main&label=test&style=flat-square)](https://github.com/BlueLua/pure-lua/actions/workflows/test.yml)
 [![LuaRocks](https://img.shields.io/luarocks/v/BlueLua/pure-lua-package?color=blue&style=flat-square)](https://luarocks.org/modules/BlueLua/pure-lua-package)
