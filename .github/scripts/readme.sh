@@ -104,15 +104,17 @@ escape_sed() {
 # ── apply_template ────────────────────────────────────────────────────────────
 # Replaces dynamic placeholders in README.md and formats it.
 apply_template() {
-  local esc_package esc_desc esc_os esc_features esc_usage
+  local esc_package esc_desc esc_os esc_features esc_usage esc_repo
   esc_package=$(escape_sed "$package")
   esc_desc=$(escape_sed "$desc")
   esc_os=$(escape_sed "$os_encoded")
   esc_features=$(escape_sed "$features_list")
   esc_usage=$(escape_sed "$usage_str")
+  esc_repo=$(escape_sed "$repo_name")
 
   sed -i \
     -e "s/__PACKAGE__/$esc_package/g" \
+    -e "s/__REPO__/$esc_repo/g" \
     -e "s/__PLATFORMS__/$esc_os/g" \
     -e "s/__DESC__/$esc_desc/g" \
     -e "s/__FEATURES__/$esc_features/g" \
