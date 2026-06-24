@@ -4,132 +4,84 @@
 
 set -euo pipefail
 
-repo_name="$1"
-if [ -z "$repo_name" ] || [ "$repo_name" = "src" ] || [ "$repo_name" = "lua" ]; then
-  repo_name="$(basename "$PWD")"
-fi
-
 CONFIG=".github/config.json"
 
+# Centralized fallback values for repository configurations
+DESC="Lua library."
+OS=("linux" "macos" "windows")
+FEAT_LUAV="**Multiple Lua Versions**: Compatible with LuaJIT, Lua 5.1, 5.2, 5.3, 5.4, and 5.5."
+FEAT_OS="**Cross-Platform**: Works consistently across Windows, macOS, and Linux."
+
+# Determine the repository name. Use the first argument by default,
+# or the directory name if the TEST environment variable is set.
+repo_name="$1"
+if [ -n "${TEST:-}" ]; then
+  repo_name="$(basename "$PWD")"
+  repo_name="${repo_name#result_}"
+fi
+
 # ── resolve_package ───────────────────────────────────────────────────────────
-# Reads .package from config.json, falls back to repo_name.
-# Sets: $package, $lua_var
+# Reads .package from config.json, falling back to repo_name.
 resolve_package() {
-  package=$(jq -r '.package // empty' "$CONFIG" 2> /dev/null)
+  package=$(jq -r '.package // empty' "$CONFIG" 2>/dev/null)
   package="${package:-$repo_name}"
-  lua_var="${package//-/_}"
 }
 
 # ── resolve_os ────────────────────────────────────────────────────────────────
-# Reads .os[] from config.json, falls back to all three platforms.
-# Sets: $os_list (array), $os_encoded (URL-encoded for Shields.io badge)
+# Reads .os[] from config.json, falling back to linux, macos, and windows.
 resolve_os() {
-  os_list=()
-  while IFS= read -r line; do
-    [ -n "$line" ] && os_list+=("$line")
-  done < <(jq -r '.os[]? // empty' "$CONFIG" 2> /dev/null)
-
-  if [ ${#os_list[@]} -eq 0 ]; then
-    os_list=("linux" "macos" "windows")
+  os_list=$(jq -r '.os[]?' "$CONFIG" 2>/dev/null | xargs || true)
+  if [ -z "$os_list" ]; then
+    os_list="${OS[*]}"
   fi
 
-  local os_str=""
-  for os in "${os_list[@]}"; do
-    if [ -z "$os_str" ]; then
-      os_str="$os"
-    else
-      os_str="$os_str | $os"
-    fi
-  done
+  local os_str
+  os_str=$(echo "$os_list" | sed 's/ / | /g')
   os_encoded=$(jq -rn --arg str "$os_str" '$str | @uri')
 }
 
-
 # ── resolve_features ──────────────────────────────────────────────────────────
-# Reads .features[] from config.json (always an array).
-# Appends default "Multiple Lua Versions" and "Cross-Platform" entries.
-# Sets: $features_list (formatted markdown bullet string)
+# Reads .features[] from config.json and formats them as markdown bullet points.
 resolve_features() {
   local features=()
   while IFS= read -r line; do
-    line="${line#"${line%%[![:space:]]*}"}"
-    line="${line%"${line##*[![:space:]]}"}"
     [ -n "$line" ] && features+=("$line")
-  done < <(jq -r '.features[]? // empty' "$CONFIG" 2> /dev/null)
+  done < <(jq -r '.features[]? // empty' "$CONFIG" 2>/dev/null)
 
-  # Default: Multiple Lua Versions
-  local has_lua="false"
-  for f in "${features[@]+"${features[@]}"}"; do
-    [[ "$f" == *"Multiple Lua Versions"* ]] && has_lua="true" && break
-  done
-  if [ "$has_lua" = "false" ]; then
-    features+=("**Multiple Lua Versions**: Compatible with LuaJIT, Lua 5.1, 5.2, 5.3, 5.4, and 5.5.")
+  # Always append the default "Multiple Lua Versions" feature
+  features+=("$FEAT_LUAV")
+
+  # Always append the default "Cross-Platform" feature if all 3 OSes are present
+  if [[ "$os_list" =~ "linux" ]] && [[ "$os_list" =~ "macos" ]] && [[ "$os_list" =~ "windows" ]]; then
+    features+=("$FEAT_OS")
   fi
 
-  # Default: Cross-Platform (only when all 3 OSes are present)
-  local has_linux="false" has_macos="false" has_windows="false"
-  for os in "${os_list[@]}"; do
-    local os_lower
-    os_lower=$(echo "$os" | tr '[:upper:]' '[:lower:]')
-    [ "$os_lower" = "linux" ] && has_linux="true"
-    [ "$os_lower" = "macos" ] && has_macos="true"
-    [ "$os_lower" = "windows" ] && has_windows="true"
-  done
-
-  if [ "$has_linux" = "true" ] && [ "$has_macos" = "true" ] && [ "$has_windows" = "true" ]; then
-    local has_cross="false"
-    for f in "${features[@]+"${features[@]}"}"; do
-      [[ "$f" == *"Cross-Platform"* ]] && has_cross="true" && break
-    done
-    if [ "$has_cross" = "false" ]; then
-      features+=("**Cross-Platform**: Works consistently across Windows, macOS, and Linux.")
-    fi
-  fi
-
-  # Format as markdown bullets
+  # Format features as markdown bullet points
   features_list=""
-  for f in "${features[@]+"${features[@]}"}"; do
+  for f in "${features[@]}"; do
     features_list="$features_list- $f"$'\n'
   done
 }
 
 # ── resolve_desc ──────────────────────────────────────────────────────────────
-# Reads .desc from config.json, falls back to a generic string.
-# Sets: $desc
+# Reads .desc from config.json, falling back to a generic description.
 resolve_desc() {
-  desc=$(jq -r '.desc // empty' "$CONFIG" 2> /dev/null)
-  desc="${desc:-Lua library.}"
+  desc=$(jq -r '.desc // empty' "$CONFIG" 2>/dev/null)
+  desc="${desc:-$DESC}"
 }
 
 # ── resolve_usage ─────────────────────────────────────────────────────────────
-# Builds the usage block: always starts with the require statement, followed
-# by a blank line and the extra usage content from config.json (if any).
-# Sets: $usage_str
+# Builds the usage block with the require line and optional custom usage code.
 resolve_usage() {
-  local module="$repo_name"
-  local require_line="local $module = require \"$module\""
+  local module="${repo_name//-/_}"
+  local require_line="local $module = require \"$repo_name\""
 
-  local usage_raw
-  usage_raw=$(jq -r '.usage // empty' "$CONFIG" 2> /dev/null)
+  local usage_extra
+  usage_extra=$(jq -r '.usage // empty' "$CONFIG" 2>/dev/null)
 
-  local usage_extra=""
-  if [ -n "$usage_raw" ]; then
-    local usage_lines=()
-    while IFS= read -r line; do
-      usage_lines+=("$line")
-    done <<< "$usage_raw"
-
-    for line in "${usage_lines[@]}"; do
-      if [ -z "$usage_extra" ]; then
-        usage_extra="$line"
-      else
-        usage_extra="$usage_extra"$'\n'"$line"
-      fi
-    done
-
-    usage_extra="${usage_extra#"${usage_extra%%[![:space:]]*}"}"
-    usage_extra="${usage_extra%"${usage_extra##*[![:space:]]}"}"
-  fi
+  # Trim leading/trailing whitespace and newlines
+  usage_extra="${usage_extra#"${usage_extra%%[![:space:]]*}"}"
+  usage_extra="${usage_extra%"${usage_extra##*[![:space:]]}"}"
 
   if [ -n "$usage_extra" ]; then
     usage_str="$require_line"$'\n\n'"$usage_extra"
@@ -139,7 +91,7 @@ resolve_usage() {
 }
 
 # ── escape_sed ────────────────────────────────────────────────────────────────
-# Escapes a string for safe use as a sed replacement value.
+# Escapes special characters for safe inclusion in a sed replacement pattern.
 escape_sed() {
   local val="$1"
   val="${val//\\/\\\\}"
@@ -150,8 +102,7 @@ escape_sed() {
 }
 
 # ── apply_template ────────────────────────────────────────────────────────────
-# Substitutes all __PLACEHOLDER__ tokens in README.md, strips prettier-ignore
-# guards, then runs prettier to format the final output.
+# Replaces dynamic placeholders in README.md and formats it.
 apply_template() {
   local esc_package esc_desc esc_os esc_features esc_usage
   esc_package=$(escape_sed "$package")
@@ -169,7 +120,7 @@ apply_template() {
     -e "/<!-- prettier-ignore -->/d" \
     README.md
 
-  npx prettier --write README.md 2> /dev/null || true
+  npx prettier --write README.md 2>/dev/null || true
 }
 
 # ── main ──────────────────────────────────────────────────────────────────────
