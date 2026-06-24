@@ -57,19 +57,17 @@ echo "=== sync.sh integration tests ==="
 echo ""
 
 # ── Test 1: New repo (no config.json) gets all 3 OSes ────────────────────────
-info "Test 1: New repo gets all 3 OS inputs in ci.yml"
+info "Test 1: New repo gets all 3 OSes in test.yml"
 dest=$(make_repo_dir "new-repo")
 (sync_directory "$dest" "new-repo" "$SCRIPT_DIR" > /dev/null)
 
-ci="$dest/.github/workflows/ci.yml"
-if [ ! -f "$ci" ]; then
-  fail "ci.yml was not created"
-elif grep -q "test-linux:" "$ci" && grep -q "test-macos:" "$ci" && grep -q "test-windows:" "$ci"; then
-  pass "All 3 OS inputs present"
-elif grep -q "__LINUX__\|__MACOS__\|__WINDOWS__" "$ci"; then
-  fail "Placeholders were not replaced"
+test_workflow_file="$dest/.github/workflows/test.yml"
+if [ ! -f "$test_workflow_file" ]; then
+  fail "test.yml was not created"
+elif grep -q '"ubuntu-latest"' "$test_workflow_file" && grep -q '"macos-latest"' "$test_workflow_file" && grep -q '"windows-latest"' "$test_workflow_file"; then
+  pass "All 3 OSes present in matrix"
 else
-  fail "ci.yml is missing expected OS inputs"
+  fail "test.yml is missing expected OS matrix values"
 fi
 
 cfg="$dest/.github/config.json"
@@ -79,18 +77,18 @@ else
   fail "config.json missing or doesn't have 3 OSes"
 fi
 
-# ── Test 2: Existing repo with linux-only config keeps only linux input ───────
-info "Test 2: Linux-only config.json keeps single 'test' input"
+# ── Test 2: Linux-only config.json keeps only linux matrix ───────────────────
+info "Test 2: Linux-only config.json keeps single 'ubuntu-latest' in matrix"
 dest=$(make_repo_dir "linux-only" '{"package":"linux-only","os":["linux"]}')
 (sync_directory "$dest" "linux-only" "$SCRIPT_DIR" > /dev/null)
 
-ci="$dest/.github/workflows/ci.yml"
-if [ ! -f "$ci" ]; then
-  fail "ci.yml was not created"
-elif grep -q "^      test:$" "$ci" && ! grep -q "inputs\.test-linux\|test-macos\|test-windows" "$ci"; then
-  pass "Single 'test' input, no OS-specific keys"
+test_workflow_file="$dest/.github/workflows/test.yml"
+if [ ! -f "$test_workflow_file" ]; then
+  fail "test.yml was not created"
+elif grep -q '"ubuntu-latest"' "$test_workflow_file" && ! grep -q '"macos-latest"\|"windows-latest"' "$test_workflow_file"; then
+  pass "Single 'ubuntu-latest' in matrix"
 else
-  fail "Expected single 'test' input for linux-only repo"
+  fail "Expected single 'ubuntu-latest' in matrix for linux-only repo"
 fi
 
 # Ensure config.json was NOT changed
@@ -102,16 +100,16 @@ else
   fail "config.json was modified (os count=$os_count, expected 1)"
 fi
 
-# ── Test 3: Existing repo with all 3 OSes keeps all 3 inputs ─────────────────
-info "Test 3: Full OS config.json keeps all 3 OS inputs"
+# ── Test 3: Existing repo with all 3 OSes keeps all 3 matrix values ──────────
+info "Test 3: Full OS config.json keeps all 3 OSes in matrix"
 dest=$(make_repo_dir "full-os" '{"package":"full-os","os":["linux","macos","windows"]}')
 (sync_directory "$dest" "full-os" "$SCRIPT_DIR" > /dev/null)
 
-ci="$dest/.github/workflows/ci.yml"
-if grep -q "test-linux:" "$ci" && grep -q "test-macos:" "$ci" && grep -q "test-windows:" "$ci"; then
-  pass "All 3 OS inputs present"
+test_workflow_file="$dest/.github/workflows/test.yml"
+if grep -q '"ubuntu-latest"' "$test_workflow_file" && grep -q '"macos-latest"' "$test_workflow_file" && grep -q '"windows-latest"' "$test_workflow_file"; then
+  pass "All 3 OSes present in matrix"
 else
-  fail "Expected all 3 OS inputs for full-os repo"
+  fail "Expected all 3 OSes in matrix for full-os repo"
 fi
 
 # ── Test 4: config.json package name is preserved after sync ──────────────────
