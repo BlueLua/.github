@@ -19,13 +19,6 @@ sync_repository_files() {
     mv "$clone_dir/.github/config.json" "$clone_dir/.github/config.json.bak"
   fi
 
-  # Backup README.md if it exists in the target repo
-  local has_readme="false"
-  if [ -f "$clone_dir/README.md" ]; then
-    has_readme="true"
-    mv "$clone_dir/README.md" "$clone_dir/README.md.bak"
-  fi
-
   cp -a template/. "$clone_dir/"
   rm -f "$clone_dir/.github/workflows/ci.yml"
 
@@ -34,11 +27,6 @@ sync_repository_files() {
   else
     # If the target repo didn't have config.json, populate the template package name with repo_name
     sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
-  fi
-
-  if [ "$has_readme" = "true" ]; then
-    # Overwrite the copied template with the repository's original README
-    mv "$clone_dir/README.md.bak" "$clone_dir/README.md"
   fi
 }
 
@@ -77,7 +65,7 @@ test_workflow() {
   if [ -f "$test_yml" ]; then
     # Fetch raw OS list from config.json
     local raw_os
-    raw_os=$(jq -r '.os[]?' .github/config.json 2> /dev/null | xargs || true)
+    raw_os=$(jq -r '.os[]?' .github/config.json 2>/dev/null | xargs || true)
 
     # Fallback to all three OSes if empty/null
     if [ -z "$raw_os" ]; then
@@ -111,7 +99,7 @@ contributing_md() {
   local repo_name="$1"
   if [ -f "CONTRIBUTING.md" ]; then
     local package_name
-    package_name=$(jq -r '.package // empty' .github/config.json 2> /dev/null || echo "")
+    package_name=$(jq -r '.package // empty' .github/config.json 2>/dev/null || echo "")
     package_name="${package_name:-$repo_name}"
 
     sed -i -e "s/__REPO__/${repo_name}/g" \
