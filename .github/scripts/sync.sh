@@ -19,6 +19,13 @@ sync_repository_files() {
     mv "$clone_dir/.github/config.json" "$clone_dir/.github/config.json.bak"
   fi
 
+  # Backup README.md if it exists in the target repo
+  local has_readme="false"
+  if [ -f "$clone_dir/README.md" ]; then
+    has_readme="true"
+    mv "$clone_dir/README.md" "$clone_dir/README.md.bak"
+  fi
+
   cp -a template/. "$clone_dir/"
   rm -f "$clone_dir/.github/workflows/ci.yml"
 
@@ -28,13 +35,18 @@ sync_repository_files() {
     # If the target repo didn't have config.json, populate the template package name with repo_name
     sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
   fi
+
+  if [ "$has_readme" = "true" ]; then
+    # Overwrite the copied template with the repository's original README
+    mv "$clone_dir/README.md.bak" "$clone_dir/README.md"
+  fi
 }
 
 # Resolve and write release-please version manifest
 release_please() {
   # Fetch tags and resolve release version if inside a git repository
   local latest_tag=""
-  if git rev-parse --is-inside-work-tree &>/dev/null; then
+  if git rev-parse --is-inside-work-tree &> /dev/null; then
     git fetch --tags || true
     latest_tag=$(git describe --tags --abbrev=0 2> /dev/null || echo "")
   fi
@@ -78,8 +90,6 @@ has_os() {
   fi
 }
 
-
-
 # Parse config.json and populate OS matrix in test.yml
 test_workflow() {
   if [ -f .github/workflows/test.yml ]; then
@@ -95,7 +105,6 @@ test_workflow() {
     sed -i "s/\[\"__OS_LIST__\"\]/$os_list/g" .github/workflows/test.yml
   fi
 }
-
 
 # Resolve and write dynamic links in CONTRIBUTING.md
 contributing_md() {
@@ -144,6 +153,7 @@ sync_directory() {
   bash "$script_dir/rockspec.sh" "$repo_name"
   release_please
   test_workflow
+  bash "$script_dir/readme.sh" "$repo_name"
   contributing_md "$repo_name"
 }
 

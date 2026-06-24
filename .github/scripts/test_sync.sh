@@ -36,7 +36,7 @@ make_repo_dir() {
   local name="$1"
   local config="${2:-}"
   local dest="$TEST_ROOT/$name"
-  
+
   rm -rf "$dest"
   mkdir -p "$dest/.github"
   echo "# $name" > "$dest/README.md"
@@ -44,7 +44,7 @@ make_repo_dir() {
   if [ -n "$config" ]; then
     printf '%s\n' "$config" > "$dest/.github/config.json"
   fi
-  
+
   echo "$dest"
 }
 
@@ -145,6 +145,36 @@ if grep -rq "__MODULES__\|__PACKAGE__\|__REPO__\|__VERSION__" "$dest/.github/" 2
   fail "Unreplaced placeholders found in .github/"
 else
   pass "No unreplaced placeholders"
+fi
+
+# ── Test 7: README.md auto-creation from config.json ─────────────────────────
+info "Test 7: README.md is auto-created from config.json"
+dest=$(make_repo_dir "readme-test" '{"package":"readme-test","desc":"A test library.","features":["Feature A","Feature B"],"usage":"test.run()"}')
+rm -f "$dest/README.md"
+(sync_directory "$dest" "readme-test" "$SCRIPT_DIR" > /dev/null)
+
+readme="$dest/README.md"
+if [ ! -f "$readme" ]; then
+  fail "README.md was not created"
+elif grep -q "A test library." "$readme" && grep -q "\- Feature A" "$readme" && grep -q "\- Feature B" "$readme" && grep -q "## ✨ Features" "$readme" && grep -q "\[!\[Test\]" "$readme" && grep -q 'local readme_test = require "readme-test"' "$readme" && grep -q "test.run()" "$readme"; then
+  pass "README.md correctly generated with description, features, badges, and custom usage"
+else
+  fail "README.md generation was incorrect"
+fi
+
+# ── Test 8: README.md auto-creation with single string multiline ──────────────
+info "Test 8: README.md handles single multiline strings for features and usage"
+dest=$(make_repo_dir "readme-string-test" '{"package":"readme-string-test","desc":"String library.","features":["Feature X","Feature Y"],"usage":"test.run()"}')
+rm -f "$dest/README.md"
+(sync_directory "$dest" "readme-string-test" "$SCRIPT_DIR" > /dev/null)
+
+readme="$dest/README.md"
+if [ ! -f "$readme" ]; then
+  fail "README.md was not created"
+elif grep -q "String library." "$readme" && grep -q "\- Feature X" "$readme" && grep -q "\- Feature Y" "$readme" && grep -q 'local readme_string_test = require "readme-string-test"' "$readme" && grep -q "test.run()" "$readme"; then
+  pass "README.md correctly generated with multiline strings"
+else
+  fail "README.md generation with multiline strings was incorrect"
 fi
 
 # ── Summary ───────────────────────────────────────────────────────────────────
