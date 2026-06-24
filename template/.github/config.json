@@ -1,9 +1,9 @@
 {
   "package": "__PACKAGE__",
   "os": ["linux", "macos", "windows"],
-  "version-files": [],
   "desc": "A short description of your Lua package.",
-  "usage": "my_lib.do_something()",
   "features": ["Feature item 1", "Feature item 2"],
+  "usage": "my_lib.do_something()",
+  "version-files": [],
   "setup-commands": ""
 }
