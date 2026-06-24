@@ -71,38 +71,38 @@ release_please() {
   npx prettier --write .github/release-please-config.json
 }
 
-# Check if an operating system is enabled in config.json
-has_os() {
-  local os_name="$1"
-  local default_val="$2"
-
-  if [ -f ".github/config.json" ]; then
-    jq -r "
-      if .os then
-        ([.os[] | select(. == \"$os_name\")] | length > 0)
-      else
-        $default_val
-      end
-    " .github/config.json 2> /dev/null ||
-      echo "$default_val"
-  else
-    echo "$default_val"
-  fi
-}
-
 # Parse config.json and populate OS matrix in test.yml
 test_workflow() {
-  if [ -f .github/workflows/test.yml ]; then
+  local test_yml=".github/workflows/test.yml"
+  if [ -f "$test_yml" ]; then
+    # Fetch raw OS list from config.json
+    local raw_os
+    raw_os=$(jq -r '.os[]?' .github/config.json 2> /dev/null | xargs || true)
+
+    # Fallback to all three OSes if empty/null
+    if [ -z "$raw_os" ]; then
+      raw_os="linux macos windows"
+    fi
+
+    # Map raw OS values to GitHub runner names
     local os_list=""
-    [ "$(has_os "linux" "true")" = "true" ] && os_list="$os_list, \"ubuntu-latest\""
-    [ "$(has_os "macos" "true")" = "true" ] && os_list="$os_list, \"macos-latest\""
-    [ "$(has_os "windows" "true")" = "true" ] && os_list="$os_list, \"windows-latest\""
+    for os in $raw_os; do
+      case "$os" in
+        linux) os_list="$os_list, \"ubuntu-latest\"" ;;
+        macos) os_list="$os_list, \"macos-latest\"" ;;
+        windows) os_list="$os_list, \"windows-latest\"" ;;
+      esac
+    done
+
+    # Format as JSON array string: ["ubuntu-latest", "macos-latest"]
     os_list="[${os_list#, }]"
 
-    # If no OS is enabled, fallback to ubuntu-latest
-    [ "$os_list" = "[]" ] && os_list='["ubuntu-latest"]'
+    # Fallback if no runner was mapped
+    if [ "$os_list" = "[]" ]; then
+      os_list='["ubuntu-latest"]'
+    fi
 
-    sed -i "s/\[\"__OS_LIST__\"\]/$os_list/g" .github/workflows/test.yml
+    sed -i "s/\[\"__OS_LIST__\"\]/$os_list/g" "$test_yml"
   fi
 }
 
@@ -110,14 +110,10 @@ test_workflow() {
 contributing_md() {
   local repo_name="$1"
   if [ -f "CONTRIBUTING.md" ]; then
-    local package_name="${repo_name}"
-    if [ -f ".github/config.json" ]; then
-      local config_package
-      config_package=$(jq -r '.package // empty' .github/config.json 2> /dev/null || echo "")
-      if [ -n "$config_package" ]; then
-        package_name="$config_package"
-      fi
-    fi
+    local package_name
+    package_name=$(jq -r '.package // empty' .github/config.json 2> /dev/null || echo "")
+    package_name="${package_name:-$repo_name}"
+
     sed -i -e "s/__REPO__/${repo_name}/g" \
       -e "s/__PACKAGE__/${package_name}/g" \
       CONTRIBUTING.md
