@@ -5,9 +5,10 @@
 
 set -euo pipefail
 
-repo_name="$1"
-if [ -z "$repo_name" ] || [ "$repo_name" = "src" ] || [ "$repo_name" = "lua" ]; then
+repo_name="${1:-}"
+if [ -n "${TEST:-}" ]; then
   repo_name="$(basename "$PWD")"
+  repo_name="${repo_name#result_}"
 fi
 src_dir="lua"
 [ -d "src" ] && src_dir="src"
@@ -20,8 +21,8 @@ if [ -f ".github/config.json" ]; then
   fi
 fi
 
-# Clean up any existing rockspecs in the root to prevent duplicates
-find . -maxdepth 1 -name "*.rockspec" ! -name ".rockspec" -exec rm -f {} +
+# Clean up any existing generated rockspecs to prevent duplicates
+rm -f *-scm-1.rockspec
 
 if [ ! -f ".rockspec" ]; then
   echo "Error: .rockspec template file not found in root directory!" >&2
@@ -95,6 +96,7 @@ if [ -d "types" ]; then
 fi
 
 # Trim trailing newline from modules_list
+# shellcheck disable=SC2059
 modules_list=$(printf "%b" "$modules_list")
 
 # Replace package and repo placeholders in template .rockspec
