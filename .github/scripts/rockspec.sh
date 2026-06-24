@@ -113,3 +113,10 @@ if command -v stylua &> /dev/null; then
 elif command -v npx &> /dev/null; then
   npx -y @johnnymorganz/stylua-bin "${package_name}-scm-1.rockspec"
 fi
+
+# Validate the generated rockspec if LuaRocks is installed locally
+if command -v luarocks &> /dev/null; then
+  echo "Validating generated rockspec..."
+  luarocks lint "${package_name}-scm-1.rockspec"
+  echo "Rockspec successfully validated!"
+fi
