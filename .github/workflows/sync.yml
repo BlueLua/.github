@@ -24,6 +24,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Install Lua
+        uses: luarocks/gh-actions-lua@master
+        with:
+          luaVersion: "5.5"
+
+      - name: Install LuaRocks
+        uses: luarocks/gh-actions-luarocks@master
+
       - name: Install StyLua
         run: npm install -g @johnnymorganz/stylua-bin
 
@@ -37,6 +45,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Install Lua
+        uses: luarocks/gh-actions-lua@master
+        with:
+          luaVersion: "5.5"
+
+      - name: Install LuaRocks
+        uses: luarocks/gh-actions-luarocks@master
 
       - name: Install StyLua
         run: npm install -g @johnnymorganz/stylua-bin
