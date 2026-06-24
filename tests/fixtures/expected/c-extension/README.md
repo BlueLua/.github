@@ -8,6 +8,8 @@
 
 Lua library.
 
+Check out the [documentation] for guides and examples.
+
 ## ✨ Features
 
 - **Multiple Lua Versions**: Compatible with LuaJIT, Lua 5.1, 5.2, 5.3, 5.4, and
@@ -24,3 +26,5 @@ luarocks install c-extension
 ```lua
 local c_extension = require "c-extension"
 ```
+
+[documentation]: https://bluelua.github.io/c-extension

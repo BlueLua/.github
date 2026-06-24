@@ -8,6 +8,8 @@
 
 Lua library.
 
+Check out the [documentation] for guides and examples.
+
 ## ✨ Features
 
 - **Multiple Lua Versions**: Compatible with LuaJIT, Lua 5.1, 5.2, 5.3, 5.4, and
@@ -24,3 +26,5 @@ luarocks install linux-only
 ```lua
 local linux_only = require "linux-only"
 ```
+
+[documentation]: https://bluelua.github.io/linux-only

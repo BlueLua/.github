@@ -8,6 +8,8 @@
 
 Lua library.
 
+Check out the [documentation] for guides and examples.
+
 ## ✨ Features
 
 - **Multiple Lua Versions**: Compatible with LuaJIT, Lua 5.1, 5.2, 5.3, 5.4, and
@@ -25,3 +27,5 @@ luarocks install full-os
 ```lua
 local full_os = require "full-os"
 ```
+
+[documentation]: https://bluelua.github.io/full-os

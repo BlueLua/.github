@@ -8,6 +8,8 @@
 
 A short description of your Lua package.
 
+Check out the [documentation] for guides and examples.
+
 ## ✨ Features
 
 - Feature item 1
@@ -29,3 +31,5 @@ local empty_repo = require "empty-repo"
 
 my_lib.do_something()
 ```
+
+[documentation]: https://bluelua.github.io/empty-repo
