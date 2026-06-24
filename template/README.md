@@ -8,6 +8,8 @@
 
 __DESC__
 
+Check out the [documentation] for guides and examples.
+
 ## ✨ Features
 
 __FEATURES__
@@ -23,3 +25,5 @@ luarocks install __PACKAGE__
 ```lua
 __USAGE__
 ```
+
+[documentation]: https://bluelua.github.io/__REPO__
