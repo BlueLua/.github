@@ -9,9 +9,10 @@ FIXTURES="$SCRIPT_DIR/fixtures"
 # Source the sync script to get sync_directory and other helper functions
 export GH_TOKEN="fake-token"
 export GITHUB_WORKSPACE="$REPO_ROOT"
+export TEST="true"
 source "$REPO_ROOT/.github/scripts/sync.sh"
 
-# ── Colours ───────────────────────────────────────────────────────────────────
+# ── Colors ────────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -30,7 +31,9 @@ FAILURES=0
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-# Compare only the files listed in expected/; diff each one.
+# Compare expected and actual outputs strictly:
+# 1. Verify the list of file paths is identical.
+# 2. Compare the content of each file.
 compare_to_expected() {
   local name="$1"
   local result_dir="$2"
@@ -46,34 +49,33 @@ compare_to_expected() {
   if [ "${BLESS:-0}" = "1" ]; then
     rm -rf "$expected_dir"
     mkdir -p "$expected_dir"
-    find "$result_dir" -type f -print | while read -r f; do
-      rel="${f#$result_dir/}"
-      dest="$expected_dir/$rel"
-      mkdir -p "$(dirname "$dest")"
-      cp "$f" "$dest"
-    done
+    cp -a "$result_dir/." "$expected_dir/"
     info "Blessed expected output for '$name'"
     return 0
   fi
 
-  while IFS= read -r -d '' expected_file; do
-    rel="${expected_file#$expected_dir/}"
-    result_file="$result_dir/$rel"
+  # Get sorted list of relative file paths in expected and actual directories
+  local expected_files actual_files
+  expected_files=$(find "$expected_dir" -type f | sed "s|^$expected_dir/||" | sort)
+  actual_files=$(find "$result_dir" -type f | sed "s|^$result_dir/||" | sort)
 
-    if [ ! -f "$result_file" ]; then
-      fail "$name: missing file after sync: $rel"
-      case_failed=1
-      continue
-    fi
+  # Check that the list of generated file paths matches the expected paths exactly
+  if [ "$expected_files" != "$actual_files" ]; then
+    fail "$name: generated file paths do not match expected paths"
+    return 1
+  fi
+
+  # Compare contents of each file
+  while IFS= read -r rel; do
+    [ -z "$rel" ] && continue
+    local expected_file="$expected_dir/$rel"
+    local result_file="$result_dir/$rel"
 
     if ! diff -u "$expected_file" "$result_file" > /dev/null 2>&1; then
       fail "$name: $rel does not match expected"
-      echo "    --- expected"
-      echo "    +++ actual"
-      diff -u "$expected_file" "$result_file" | sed 's/^/    /' || true
       case_failed=1
     fi
-  done < <(find "$expected_dir" -type f -print0)
+  done <<< "$expected_files"
 
   return $case_failed
 }
@@ -101,10 +103,9 @@ for name in "${cases[@]}"; do
   rm -rf "$result_dir"
   mkdir -p "$result_dir"
 
+  # Copy fixture repository template files
   fixture_dir="$FIXTURES/repos/$name"
-  if [ -n "$(find "$fixture_dir" -mindepth 1 -print -quit 2> /dev/null)" ]; then
-    cp -a "$fixture_dir/." "$result_dir/"
-  fi
+  cp -a "$fixture_dir/." "$result_dir/"
 
   # Run the sync logic purely on the directory in a subshell
   (sync_directory "$result_dir" "$name" "$REPO_ROOT/.github/scripts" > /dev/null)
