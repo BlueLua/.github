@@ -1,8 +1,0 @@
-rawset(_G, "_TEST", true)
-
-return {
-  _all = {
-    ROOT = { "tests" },
-    pattern = "%.test%.lua$",
-  },
-}
