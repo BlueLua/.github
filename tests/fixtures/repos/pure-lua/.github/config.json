@@ -2,5 +2,6 @@
   "package": "pure-lua-package",
   "os": ["linux", "macos", "windows"],
   "version-files": [],
+  "dependencies": ["luafilesystem >= 1.8.0", "penlight"],
   "setup-commands": ""
 }

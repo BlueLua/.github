@@ -5,5 +5,6 @@
   "features": ["Feature item 1", "Feature item 2"],
   "usage": "my_lib.do_something()",
   "version-files": ["src/new-repo/init.lua", "types/new-repo.d.lua"],
+  "dependencies": [],
   "setup-commands": ""
 }
