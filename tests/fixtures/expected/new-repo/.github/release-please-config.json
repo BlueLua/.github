@@ -3,7 +3,7 @@
     ".": {
       "release-type": "simple",
       "initial-version": "0.1.0",
-      "extra-files": []
+      "extra-files": ["src/new-repo/init.lua", "types/new-repo.d.lua"]
     }
   }
 }
