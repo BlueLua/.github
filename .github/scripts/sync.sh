@@ -8,6 +8,16 @@ configure_git() {
   git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 }
 
+# Helper to perform in-place regex replacement in a file
+replace_in_file() {
+  local file="$1"
+  shift
+  while [ "$#" -gt 0 ]; do
+    sed -i "s|$1|$2|g" "$file"
+    shift 2
+  done
+}
+
 # Copy central template files to target repository clone
 sync_repository_files() {
   local clone_dir="$1"
@@ -30,9 +40,9 @@ sync_repository_files() {
 
   # If the target repo didn't have config.json, populate the template package name and repo name
   if [ ! -f "$clone_dir/.github/config.json.bak" ]; then
-    sed -i -e "s/__PACKAGE__/${repo_name}/g" \
-           -e "s/__REPO__/${repo_name}/g" \
-           "$clone_dir/.github/config.json"
+    replace_in_file "$clone_dir/.github/config.json" \
+      "__PACKAGE__" "${repo_name}" \
+      "__REPO__" "${repo_name}"
   fi
 
   # Restore files
@@ -56,7 +66,7 @@ release_please() {
   local latest_version="${latest_tag#v}"
   latest_version="${latest_version:-0.0.0}"
 
-  sed -i "s/__VERSION__/$latest_version/g" .github/release-please-manifest.json
+  replace_in_file .github/release-please-manifest.json "__VERSION__" "$latest_version"
 
   # Inject version-files list from config.json if defined
   if [ -f ".github/config.json" ]; then
@@ -104,7 +114,7 @@ test_workflow() {
       os_list='["ubuntu-latest"]'
     fi
 
-    sed -i "s/\[\"__OS_LIST__\"\]/$os_list/g" "$test_yml"
+    replace_in_file "$test_yml" '\["__OS_LIST__"\]' "$os_list"
   fi
 }
 
@@ -116,9 +126,9 @@ contributing_md() {
     package_name=$(jq -r '.package // empty' .github/config.json 2>/dev/null || echo "")
     package_name="${package_name:-$repo_name}"
 
-    sed -i -e "s/__REPO__/${repo_name}/g" \
-      -e "s/__PACKAGE__/${package_name}/g" \
-      CONTRIBUTING.md
+    replace_in_file CONTRIBUTING.md \
+      "__REPO__" "${repo_name}" \
+      "__PACKAGE__" "${package_name}"
 
     npx prettier --write CONTRIBUTING.md
   fi
