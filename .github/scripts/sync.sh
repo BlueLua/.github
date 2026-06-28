@@ -28,9 +28,11 @@ sync_repository_files() {
 
   cp -a template/. "$clone_dir/"
 
-  # If the target repo didn't have config.json, populate the template package name with repo_name
+  # If the target repo didn't have config.json, populate the template package name and repo name
   if [ ! -f "$clone_dir/.github/config.json.bak" ]; then
-    sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
+    sed -i -e "s/__PACKAGE__/${repo_name}/g" \
+           -e "s/__REPO__/${repo_name}/g" \
+           "$clone_dir/.github/config.json"
   fi
 
   # Restore files

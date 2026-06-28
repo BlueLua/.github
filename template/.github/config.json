@@ -4,6 +4,6 @@
   "desc": "A short description of your Lua package.",
   "features": ["Feature item 1", "Feature item 2"],
   "usage": "my_lib.do_something()",
-  "version-files": [],
+  "version-files": ["src/__REPO__/init.lua", "types/__REPO__.d.lua"],
   "setup-commands": ""
 }
