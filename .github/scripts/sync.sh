@@ -19,6 +19,13 @@ sync_repository_files() {
     mv "$clone_dir/.github/config.json" "$clone_dir/.github/config.json.bak"
   fi
 
+  # Backup CHANGELOG.md if it already exists so we don't overwrite it
+  local has_changelog="false"
+  if [ -f "$clone_dir/CHANGELOG.md" ]; then
+    has_changelog="true"
+    mv "$clone_dir/CHANGELOG.md" "$clone_dir/CHANGELOG.md.bak"
+  fi
+
   cp -a template/. "$clone_dir/"
 
   if [ "$has_config" = "true" ]; then
@@ -26,6 +33,11 @@ sync_repository_files() {
   else
     # If the target repo didn't have config.json, populate the template package name with repo_name
     sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
+  fi
+
+  # Restore the original CHANGELOG.md if we backed it up
+  if [ "$has_changelog" = "true" ]; then
+    mv "$clone_dir/CHANGELOG.md.bak" "$clone_dir/CHANGELOG.md"
   fi
 }
 
