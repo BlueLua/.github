@@ -11,6 +11,7 @@ description = {
 
 dependencies = {
   "lua >= 5.1",
+  __DEPENDENCIES__
 }
 
 build = {

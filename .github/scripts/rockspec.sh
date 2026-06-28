@@ -116,6 +116,20 @@ fi
 # Replace the __BIN__ placeholder
 awk -v r="$bin_block" '{gsub(/__BIN__/, r)}1' .rockspec > .rockspec.tmp && mv .rockspec.tmp .rockspec
 
+# Generate the dependencies list if present in config.json
+dependencies_list=""
+if [ -f ".github/config.json" ]; then
+  dependencies_json=$(jq -r '.dependencies[]?' .github/config.json 2>/dev/null || true)
+  if [ -n "$dependencies_json" ]; then
+    while IFS= read -r dep; do
+      [ -n "$dep" ] && dependencies_list="${dependencies_list}  \"${dep}\",\n"
+    done <<< "$dependencies_json"
+  fi
+fi
+
+# Replace the __DEPENDENCIES__ placeholder
+awk -v r="$dependencies_list" '{gsub(/__DEPENDENCIES__/, r)}1' .rockspec > .rockspec.tmp && mv .rockspec.tmp .rockspec
+
 mv .rockspec "${package_name}-scm-1.rockspec"
 
 # Format the generated rockspec file using StyLua if available
