@@ -27,6 +27,7 @@ sync_repository_files() {
   local preserve_files=(
     ".github/config.json"
     "CHANGELOG.md"
+    ".github/workflows/test.yml"
   )
 
   # Backup files
