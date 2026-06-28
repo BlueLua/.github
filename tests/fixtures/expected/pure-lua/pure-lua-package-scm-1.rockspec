@@ -19,4 +19,9 @@ build = {
     ["pure-lua"] = "src/pure-lua/init.lua",
     ["pure-lua.util"] = "src/pure-lua/util.lua",
   },
+  install = {
+    bin = {
+      ["pure-lua"] = "bin/pure-lua",
+    },
+  },
 }
