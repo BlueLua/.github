@@ -18,4 +18,5 @@ build = {
   modules = {
     __MODULES__
   },
+  __BIN__
 }

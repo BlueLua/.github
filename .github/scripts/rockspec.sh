@@ -107,6 +107,15 @@ sed -i -e "s/__PACKAGE__/${package_name}/g" \
 # Replace the __MODULES__ placeholder with the generated modules list
 awk -v r="$modules_list" '{gsub(/__MODULES__/, r)}1' .rockspec > .rockspec.tmp && mv .rockspec.tmp .rockspec
 
+# Generate the bin block if a bin file named after the repository exists
+bin_block=""
+if [ -d "bin" ] && [ -f "bin/${repo_name}" ]; then
+  bin_block="install = {\n    bin = {\n      [\"${repo_name}\"] = \"bin/${repo_name}\"\n    }\n  }"
+fi
+
+# Replace the __BIN__ placeholder
+awk -v r="$bin_block" '{gsub(/__BIN__/, r)}1' .rockspec > .rockspec.tmp && mv .rockspec.tmp .rockspec
+
 mv .rockspec "${package_name}-scm-1.rockspec"
 
 # Format the generated rockspec file using StyLua if available
