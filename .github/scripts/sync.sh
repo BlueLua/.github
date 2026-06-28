@@ -13,32 +13,33 @@ sync_repository_files() {
   local clone_dir="$1"
   local repo_name="$2"
 
-  local has_config="false"
-  if [ -f "$clone_dir/.github/config.json" ]; then
-    has_config="true"
-    mv "$clone_dir/.github/config.json" "$clone_dir/.github/config.json.bak"
-  fi
+  # List of files to preserve if they already exist in the target repository
+  local preserve_files=(
+    ".github/config.json"
+    "CHANGELOG.md"
+  )
 
-  # Backup CHANGELOG.md if it already exists so we don't overwrite it
-  local has_changelog="false"
-  if [ -f "$clone_dir/CHANGELOG.md" ]; then
-    has_changelog="true"
-    mv "$clone_dir/CHANGELOG.md" "$clone_dir/CHANGELOG.md.bak"
-  fi
+  # Backup files
+  for file in "${preserve_files[@]}"; do
+    if [ -f "$clone_dir/$file" ]; then
+      mv "$clone_dir/$file" "$clone_dir/${file}.bak"
+    fi
+  done
 
   cp -a template/. "$clone_dir/"
 
-  if [ "$has_config" = "true" ]; then
-    mv "$clone_dir/.github/config.json.bak" "$clone_dir/.github/config.json"
-  else
-    # If the target repo didn't have config.json, populate the template package name with repo_name
+  # If the target repo didn't have config.json, populate the template package name with repo_name
+  if [ ! -f "$clone_dir/.github/config.json.bak" ]; then
     sed -i "s/__PACKAGE__/${repo_name}/g" "$clone_dir/.github/config.json"
   fi
 
-  # Restore the original CHANGELOG.md if we backed it up
-  if [ "$has_changelog" = "true" ]; then
-    mv "$clone_dir/CHANGELOG.md.bak" "$clone_dir/CHANGELOG.md"
-  fi
+  # Restore files
+  for file in "${preserve_files[@]}"; do
+    if [ -f "$clone_dir/${file}.bak" ]; then
+      rm -f "$clone_dir/$file"
+      mv "$clone_dir/${file}.bak" "$clone_dir/$file"
+    fi
+  done
 }
 
 # Resolve and write release-please version manifest
